@@ -1,6 +1,6 @@
 package net.ausiasmarch.persutil.entity;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 
@@ -9,15 +9,16 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.Lob;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name="pelicula")
+@Table(name="sempertegui_pelicula")
 @Data
 @NoArgsConstructor
 public class SemperteguiEntity {
@@ -27,22 +28,35 @@ public class SemperteguiEntity {
     private long id;
 
     @NotNull
-    @Size(min=3, max=1024)
+    @Size(min=3, max=255)
     private String nombre;
 
     @NotNull
-    @Size(min=3, max=1024)
+    @Size(min=3, max=255)
+    private String genero;
+
+    @NotNull
+    @Size(min=3, max=255)
     private String director;
 
+    @NotNull
+    private int puntuacion;
+
+    @NotNull
+    @Min(1901)
+    @Max(2155)
+    private int anyo;
+
+    @NotNull
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", shape=JsonFormat.Shape.STRING)
+    private LocalDateTime fechaCreacion;
+
     @Nullable
-    @JsonFormat(pattern = "yyyy-MM-dd", shape=JsonFormat.Shape.STRING)
-    private LocalDate fechaLanzamiento;
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", shape=JsonFormat.Shape.STRING)
+    private LocalDateTime fechaModificacion;
 
-    @NotNull
-    private double puntuación;
-
-    @NotNull
-    @Lob
-    private byte[] portada;
+    // @NotNull
+    // @Lob
+    // private byte[] portada;
 
 }

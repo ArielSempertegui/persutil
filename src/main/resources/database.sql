@@ -18,6 +18,23 @@ SET time_zone = "+00:00";
 -- --------------------------------------------------------
 
 --
+-- Estructura de tabla para la tabla `sempertegui_pelicula`
+--
+
+CREATE TABLE `sempertegui_pelicula` (
+  `id` BIGINT NOT NULL AUTO_INCREMENT , 
+  `nombre` VARCHAR(255) NOT NULL , 
+  `genero` VARCHAR(255) NOT NULL , 
+  `director` VARCHAR(255) NOT NULL , 
+  `puntuacion` INT NOT NULL , 
+  `anyo` YEAR NOT NULL , 
+  `fecha_creacion` DATETIME NOT NULL , 
+  `fecha_modificacion` DATETIME DEFAULT NULL , 
+  PRIMARY KEY (`id`), 
+  UNIQUE `nombre` (`nombre`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf32 COLLATE=utf32_unicode_ci;
+
+--
 -- Estructura de tabla para la tabla `blog`
 --
 
