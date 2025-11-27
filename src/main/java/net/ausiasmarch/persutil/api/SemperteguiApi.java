@@ -2,6 +2,8 @@ package net.ausiasmarch.persutil.api;
 
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -24,17 +26,13 @@ public class SemperteguiApi {
     @Autowired
     SemperteguiService semperteguiService;
 
-    @GetMapping("/pelicula")
-    public ResponseEntity<String> pelicula(){
-        return ResponseEntity.ok("HOLA ESTA TODO OK");
-    }
-
-    @GetMapping("/rellena")
-    public ResponseEntity<Long> rellenaPeliculas(){
-        return ResponseEntity.ok(semperteguiService.rellenaPeliculas());
-    }
-
     // ----------------------------CRUD---------------------------------
+
+    // Obtener un listado paginado de todas las películas (getAll)
+    @GetMapping("")
+    public ResponseEntity<Page<SemperteguiEntity>> getPage(Pageable pageable) {
+        return ResponseEntity.ok(semperteguiService.getPage(pageable));
+    }
 
     // Obtener una película por id
     @GetMapping("/{id}")
@@ -58,5 +56,10 @@ public class SemperteguiApi {
     @DeleteMapping("/{id}")
     public ResponseEntity<Long> delete(@PathVariable Long id) {
         return ResponseEntity.ok(semperteguiService.delete(id));
+    }
+
+    @GetMapping("/rellena")
+    public ResponseEntity<Long> rellenaPeliculas(){
+        return ResponseEntity.ok(semperteguiService.rellenaPeliculas());
     }
 }

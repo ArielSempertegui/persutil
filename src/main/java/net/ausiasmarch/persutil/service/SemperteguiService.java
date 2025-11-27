@@ -3,6 +3,8 @@ package net.ausiasmarch.persutil.service;
 import java.time.LocalDateTime;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import net.ausiasmarch.persutil.entity.SemperteguiEntity;
@@ -37,6 +39,8 @@ public class SemperteguiService {
             semperteguiEntity.setDirector((String) pelicula[2]);
             semperteguiEntity.setPuntuacion((int) pelicula[3]);
             semperteguiEntity.setAnyo((int) pelicula[4]);
+            semperteguiEntity.setFechaCreacion(LocalDateTime.now());
+            semperteguiEntity.setFechaModificacion(null);
             semperteguiRepository.save(semperteguiEntity);
         }
         return semperteguiRepository.count();
@@ -70,5 +74,9 @@ public class SemperteguiService {
     public Long delete(Long id){
         semperteguiRepository.deleteById(id);
         return id;
+    }
+
+    public Page<SemperteguiEntity> getPage(Pageable pageable){
+        return semperteguiRepository.findAll(pageable);
     }
 }
