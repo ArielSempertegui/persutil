@@ -28,7 +28,7 @@ public class SemperteguiEntity {
     private long id;
 
     @NotNull
-    @Size(min=3, max=255)
+    @Size(min=2, max=255)
     private String nombre;
 
     @NotNull

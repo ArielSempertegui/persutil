@@ -62,4 +62,9 @@ public class SemperteguiApi {
     public ResponseEntity<Long> rellenaPeliculas(){
         return ResponseEntity.ok(semperteguiService.rellenaPeliculas());
     }
+
+    @GetMapping("/count")
+    public ResponseEntity<Long> count() {
+        return ResponseEntity.ok(semperteguiService.count()); 
+    }
 }

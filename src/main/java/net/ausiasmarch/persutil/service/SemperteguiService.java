@@ -18,16 +18,16 @@ public class SemperteguiService {
 
 
     Object[][] peliculasSimuladas = {
-        {"La Naranja Mecánica", "Ciencia Ficción, Sátira, Drama", "Stanley Kubrick", 8, 1971},
-        {"Pulp Fiction", "Crimen, Comedia negra, Suspense", "Quentin Tarantino", 9, 1994},
-        {"The Matrix", "Ciencia Ficción, Acción", "Lana y Lilly Wachowski", 8, 1999},
-        {"The Dark Knight", "Acción, Crimen, Drama", "Christopher Nolan", 9, 2008},
-        {"Inception", "Ciencia Ficción, Acción", "Christopher Nolan", 8, 2010},
-        {"Interstellar", "Ciencia Ficción, Aventura, Drama", "Christopher Nolan", 7, 2014},
-        {"Parasite", "Drama, Suspense", "Bong Joon-ho", 9, 2019},
-        {"Oppenheimer", "Biografía, Drama", "Christopher Nolan", 9, 2023},
-        {"Barbie", "Comedia Fantástica", "Greta Gerwing", 8, 2023},
-        {"Dune: Part Two", "Ciencia Ficción, Aventura", "Denis Villeneuve", 9, 2024}
+        {"La Naranja Mecánica", "Ciencia Ficción, Sátira, Drama", "Stanley Kubrick", 87, 1971},
+        {"Pulp Fiction", "Crimen, Comedia negra, Suspense", "Quentin Tarantino", 92, 1994},
+        {"The Matrix", "Ciencia Ficción, Acción", "Lana y Lilly Wachowski", 88, 1999},
+        {"The Dark Knight", "Acción, Crimen, Drama", "Christopher Nolan", 94, 2008},
+        {"Inception", "Ciencia Ficción, Acción", "Christopher Nolan", 87, 2010},
+        {"Interstellar", "Ciencia Ficción, Aventura, Drama", "Christopher Nolan", 73, 2014},
+        {"Parasite", "Drama, Suspense", "Bong Joon-ho", 99, 2019},
+        {"Oppenheimer", "Biografía, Drama", "Christopher Nolan", 93, 2023},
+        {"Barbie", "Comedia Fantástica", "Greta Gerwing", 88, 2023},
+        {"Dune: Part Two", "Ciencia Ficción, Aventura", "Denis Villeneuve", 93, 2024}
     };
 
     public Long rellenaPeliculas(){
@@ -78,5 +78,9 @@ public class SemperteguiService {
 
     public Page<SemperteguiEntity> getPage(Pageable pageable){
         return semperteguiRepository.findAll(pageable);
+    }
+
+    public Long count(){
+        return semperteguiRepository.count();
     }
 }
