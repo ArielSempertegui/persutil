@@ -26,7 +26,15 @@ public class JwtFilter implements Filter {
             String authToken = ((HttpServletRequest) request).getHeader("Authorization");
             if (authToken != null && authToken.startsWith("Bearer ")) {
                 authToken = authToken.substring(7);
+                // debug
+                System.out.println("Method: " + ((HttpServletRequest) request).getMethod());
+                System.out.println("URL: " + ((HttpServletRequest) request).getRequestURL().toString());
+                System.out.println("Auth Token: " + authToken);
             } else {
+                System.out.println("Method: " + ((HttpServletRequest) request).getMethod());
+                System.out.println("URL: " + ((HttpServletRequest) request).getRequestURL().toString());
+                System.out.println("Auth Token: No se ha proporcionado");
+                ((HttpServletRequest) request).setAttribute("username", null);
                 chain.doFilter(request, response);
             }
             // Validar el token JWT

@@ -134,6 +134,7 @@ public class BlogService {
         existingBlog.setTitulo(blogEntity.getTitulo());
         existingBlog.setContenido(blogEntity.getContenido());
         existingBlog.setEtiquetas(blogEntity.getEtiquetas());
+        existingBlog.setPublicado(blogEntity.getPublicado());
         existingBlog.setFechaModificacion(LocalDateTime.now());
         oBlogRepository.save(existingBlog);
         return existingBlog.getId();
