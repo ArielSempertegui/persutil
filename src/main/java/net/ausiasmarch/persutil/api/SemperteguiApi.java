@@ -26,6 +26,13 @@ public class SemperteguiApi {
     @Autowired
     SemperteguiService semperteguiService;
 
+    // ---------------------------Rellenar datos fake ---------------------------
+    
+    @GetMapping("/rellena/{numPosts}")
+    public ResponseEntity<Long> rellenaPeliculas(@PathVariable Long numPosts){
+        return ResponseEntity.ok(semperteguiService.rellenaPeliculas(numPosts));
+    }
+
     // ----------------------------CRUD---------------------------------
 
     // Obtener un listado paginado de todas las películas (getAll)
@@ -56,11 +63,6 @@ public class SemperteguiApi {
     @DeleteMapping("/{id}")
     public ResponseEntity<Long> delete(@PathVariable Long id) {
         return ResponseEntity.ok(semperteguiService.delete(id));
-    }
-
-    @GetMapping("/rellena")
-    public ResponseEntity<Long> rellenaPeliculas(){
-        return ResponseEntity.ok(semperteguiService.rellenaPeliculas());
     }
 
     @GetMapping("/count")
