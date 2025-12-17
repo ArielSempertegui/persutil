@@ -41,25 +41,25 @@ public class SemperteguiApi {
         return ResponseEntity.ok(semperteguiService.getPage(pageable));
     }
 
-    // Obtener una película por id
+    // Obtener película por id
     @GetMapping("/{id}")
     public ResponseEntity<SemperteguiEntity> get(@PathVariable Long id) {
         return ResponseEntity.ok(semperteguiService.get(id));
     }
 
-    // Crear una película
+    // Crear película
     @PostMapping("")
     public ResponseEntity<Long> create(@RequestBody SemperteguiEntity semperteguiEntity) {
         return ResponseEntity.ok(semperteguiService.create(semperteguiEntity));
     }
 
-    // Modificar una película
+    // Modificar película
     @PutMapping("")
     public ResponseEntity<Long> update(@RequestBody SemperteguiEntity semperteguiEntity) {
         return ResponseEntity.ok(semperteguiService.update(semperteguiEntity));
     }
 
-    // Borrar una película
+    // Borrar película por id
     @DeleteMapping("/{id}")
     public ResponseEntity<Long> delete(@PathVariable Long id) {
         return ResponseEntity.ok(semperteguiService.delete(id));
@@ -68,5 +68,20 @@ public class SemperteguiApi {
     @GetMapping("/count")
     public ResponseEntity<Long> count() {
         return ResponseEntity.ok(semperteguiService.count()); 
+    }
+
+
+    // ----- Publicar o Despublicar
+
+    // publicar post
+    @PutMapping("/publicar/{id}")
+    public ResponseEntity<Long> publicar(@PathVariable Long id) {
+        return ResponseEntity.ok(semperteguiService.publicar(id));
+    }
+
+    // despublicar post
+    @PutMapping("/despublicar/{id}")
+    public ResponseEntity<Long> despublicar(@PathVariable Long id) {
+        return ResponseEntity.ok(semperteguiService.despublicar(id));
     }
 }

@@ -252,6 +252,7 @@ CREATE TABLE `sempertegui_pelicula` (
   `director` varchar(255) CHARACTER SET utf32 COLLATE utf32_unicode_ci NOT NULL,
   `puntuacion` int NOT NULL,
   `anyo` year NOT NULL,
+  `publicado` tinyint NOT NULL DEFAULT '0',
   `fecha_creacion` datetime NOT NULL,
   `fecha_modificacion` datetime DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf32 COLLATE=utf32_unicode_ci;
