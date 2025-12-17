@@ -196,4 +196,14 @@ public class BlogService {
         return existingBlog.getId();
     }
 
+    // vaciar tabla blog (solo administrador)
+    public Long empty() {
+        if (!oSessionService.isSessionActive()) {
+            throw new UnauthorizedException("No active session");
+        }
+        Long total = oBlogRepository.count();
+        oBlogRepository.deleteAll();
+        return total;
+    }
+
 }

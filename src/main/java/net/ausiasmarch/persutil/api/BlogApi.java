@@ -96,6 +96,12 @@ public class BlogApi {
         return ResponseEntity.ok(oBlogService.delete(id));
     }
 
+    // vaciar tabla blog (solo administradores)
+    @DeleteMapping("/empty")
+    public ResponseEntity<Long> empty() {
+        return ResponseEntity.ok(oBlogService.empty());
+    }
+
     // listado paginado de posts
     @GetMapping("")
     public ResponseEntity<Page<BlogEntity>> getPage(Pageable oPageable) {
