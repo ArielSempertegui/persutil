@@ -31,7 +31,7 @@ public class SemperteguiService {
         "sed", "do", "eiusmod", "tempor", "incididunt", "ut", "labore", "et", 
         "dolore", "magna", "aliqua", "enim", "ad", "minim", "veniam"
     };
-    private static final String[] GENEROS = {"Acción", "Drama", "Comedia", "Terror", "Ciencia Ficción", "Documental", "Crimen", "Suspense", "Thriller"};
+    private static final String[] GENEROS = {"Acción", "Drama", "Comedia", "Terror", "Ciencia ficción", "Documental", "Crimen", "Suspense", "Thriller"};
     private static final String[] NOMBRES = {"Stanley", "Quentin", "Christopher", "Greta", "Denis", "Steven", "Pedro", "Antonio", "Elena", "Sara"};
     private static final String[] APELLIDOS = {"Kubrick", "Tarantino", "Nolan", "Gerwing", "Villeneuve", "Spielberg", "Almodóvar", "Bayona", "Smith"}; 
 
@@ -72,7 +72,8 @@ public class SemperteguiService {
             SemperteguiEntity semperteguiEntity = new SemperteguiEntity();
             semperteguiEntity.setTitulo(generarFrase(1, 4, true));
             String generos = "";
-            for (int i = 0; i < 3; i++) {
+            int numGeneros = aleatorioService.GenerarNumeroAleatorioEnteroEnRango(1, 3);
+            for (int i = 0; i < numGeneros; i++) {
                 String genero = GENEROS[aleatorioService.GenerarNumeroAleatorioEnteroEnRango(0, GENEROS.length - 1)];
                 if (!generos.contains(genero)) {
                     generos += genero + ", ";
@@ -86,7 +87,7 @@ public class SemperteguiService {
             semperteguiEntity.setSinopsis(generarFrase(5, 30, false));
             semperteguiEntity.setDirector(NOMBRES[aleatorioService.GenerarNumeroAleatorioEnteroEnRango(0, NOMBRES.length - 1)] + " " + APELLIDOS[aleatorioService.GenerarNumeroAleatorioEnteroEnRango(0, APELLIDOS.length - 1)]);
             semperteguiEntity.setPuntuacion(aleatorioService.GenerarNumeroAleatorioEnteroEnRango(0, 100));
-            semperteguiEntity.setAnyo(aleatorioService.GenerarNumeroAleatorioEnteroEnRango(1901, 2155));
+            semperteguiEntity.setAnyo(aleatorioService.GenerarNumeroAleatorioEnteroEnRango(1901, LocalDateTime.now().getYear()));
             semperteguiEntity.setPublicado(aleatorioService.GenerarNumeroAleatorioEnteroEnRango(0, 1) == 1);
             semperteguiEntity.setFechaCreacion(LocalDateTime.now());
             semperteguiEntity.setFechaModificacion(null);
