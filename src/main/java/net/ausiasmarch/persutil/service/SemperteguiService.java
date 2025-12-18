@@ -1,6 +1,7 @@
 package net.ausiasmarch.persutil.service;
 
 import java.time.LocalDateTime;
+import java.util.Random;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -24,23 +25,42 @@ public class SemperteguiService {
     @Autowired
     SessionService sessionService;
 
-    // Object[][] peliculasSimuladas = {
-    //     {"La Naranja Mecánica", "Ciencia Ficción, Sátira, Drama", "Stanley Kubrick", 87, 1971},
-    //     {"Pulp Fiction", "Crimen, Comedia negra, Suspense", "Quentin Tarantino", 92, 1994},
-    //     {"The Matrix", "Ciencia Ficción, Acción", "Larry y Andy Wachowski", 88, 1999},
-    //     {"The Dark Knight", "Acción, Crimen, Drama", "Christopher Nolan", 94, 2008},
-    //     {"Inception", "Ciencia Ficción, Acción", "Christopher Nolan", 87, 2010},
-    //     {"Interstellar", "Ciencia Ficción, Aventura, Drama", "Christopher Nolan", 73, 2014},
-    //     {"Parasite", "Drama, Suspense", "Bong Joon-ho", 99, 2019},
-    //     {"Oppenheimer", "Biografía, Drama", "Christopher Nolan", 93, 2023},
-    //     {"Barbie", "Comedia Fantástica", "Greta Gerwing", 88, 2023},
-    //     {"Dune: Part Two", "Ciencia Ficción, Aventura", "Denis Villeneuve", 93, 2024}
-    // };
-
-    private static final String[] LOREM = {"Lorem", "Ipsum", "Dolor", "Sit", "Amet", "Consectetur", "Adipiscing", "Elit", "Sed"};
+    // Lista de palabras estándar de Lorem Ipsum
+    private static final String[] LOREM = {
+        "lorem", "ipsum", "dolor", "sit", "amet", "consectetur", "adipiscing", "elit", 
+        "sed", "do", "eiusmod", "tempor", "incididunt", "ut", "labore", "et", 
+        "dolore", "magna", "aliqua", "enim", "ad", "minim", "veniam"
+    };
     private static final String[] GENEROS = {"Acción", "Drama", "Comedia", "Terror", "Ciencia Ficción", "Documental", "Crimen", "Suspense", "Thriller"};
     private static final String[] NOMBRES = {"Stanley", "Quentin", "Christopher", "Greta", "Denis", "Steven", "Pedro", "Antonio", "Elena", "Sara"};
     private static final String[] APELLIDOS = {"Kubrick", "Tarantino", "Nolan", "Gerwing", "Villeneuve", "Spielberg", "Almodóvar", "Bayona", "Smith"}; 
+
+    // Generadora de frases Aleatorias
+    public static String generarFrase(int min, int max, boolean esTitulo) {
+        Random random = new Random();
+        // Determinar la longitud aleatoria entre min y max
+        int longitud = random.nextInt((max - min) + 1) + min;
+        StringBuilder frase = new StringBuilder();
+        
+        for (int i = 0; i < longitud; i++) {
+            // Seleccionar una palabra aleatoria del arreglo
+            String palabra = LOREM[random.nextInt(LOREM.length)];
+            // Capitalizar la primera letra de las palabras segun si es Titulo o no
+            if(esTitulo) {
+                palabra = palabra.substring(0, 1).toUpperCase() + palabra.substring(1);
+            } else if (i == 0) {
+                palabra = palabra.substring(0, 1).toUpperCase() + palabra.substring(1);
+            }
+            frase.append(palabra);
+            // Añadir espacio si no es la última palabra, o punto final si lo es
+            if (i < longitud - 1) {
+                frase.append(" ");
+            } else if(!esTitulo){
+                frase.append(".");
+            }
+        }
+        return frase.toString();
+    }
 
     public Long rellenaPeliculas(Long numPosts){
 
@@ -50,7 +70,7 @@ public class SemperteguiService {
 
         for (long j = 0; j < numPosts; j++) {
             SemperteguiEntity semperteguiEntity = new SemperteguiEntity();
-            semperteguiEntity.setTitulo(LOREM[aleatorioService.GenerarNumeroAleatorioEnteroEnRango(0, LOREM.length - 1)] + " " + LOREM[aleatorioService.GenerarNumeroAleatorioEnteroEnRango(0, LOREM.length - 1)]);
+            semperteguiEntity.setTitulo(generarFrase(1, 4, true));
             String generos = "";
             for (int i = 0; i < 3; i++) {
                 String genero = GENEROS[aleatorioService.GenerarNumeroAleatorioEnteroEnRango(0, GENEROS.length - 1)];
@@ -63,9 +83,11 @@ public class SemperteguiService {
                 generos = generos.substring(0, generos.length() - 2);
             }
             semperteguiEntity.setGenero(generos);
+            semperteguiEntity.setSinopsis(generarFrase(5, 30, false));
             semperteguiEntity.setDirector(NOMBRES[aleatorioService.GenerarNumeroAleatorioEnteroEnRango(0, NOMBRES.length - 1)] + " " + APELLIDOS[aleatorioService.GenerarNumeroAleatorioEnteroEnRango(0, APELLIDOS.length - 1)]);
             semperteguiEntity.setPuntuacion(aleatorioService.GenerarNumeroAleatorioEnteroEnRango(0, 100));
             semperteguiEntity.setAnyo(aleatorioService.GenerarNumeroAleatorioEnteroEnRango(1901, 2155));
+            semperteguiEntity.setPublicado(aleatorioService.GenerarNumeroAleatorioEnteroEnRango(0, 1) == 1);
             semperteguiEntity.setFechaCreacion(LocalDateTime.now());
             semperteguiEntity.setFechaModificacion(null);
             // poner la flag de publicado aleatoriamente
@@ -107,9 +129,11 @@ public class SemperteguiService {
         SemperteguiEntity existingPelicula = semperteguiRepository.findById(semperteguiEntity.getId()).orElseThrow(() -> new ResourceNotFoundException("Movie not found"));
         existingPelicula.setTitulo(semperteguiEntity.getTitulo());
         existingPelicula.setGenero(semperteguiEntity.getGenero());
+        existingPelicula.setSinopsis(semperteguiEntity.getSinopsis());
         existingPelicula.setDirector(semperteguiEntity.getDirector());
         existingPelicula.setPuntuacion(semperteguiEntity.getPuntuacion());
         existingPelicula.setAnyo(semperteguiEntity.getAnyo());
+        existingPelicula.setPublicado(semperteguiEntity.getPublicado());
         existingPelicula.setFechaModificacion(LocalDateTime.now());
         semperteguiRepository.save(existingPelicula);
         return existingPelicula.getId();
@@ -159,5 +183,15 @@ public class SemperteguiService {
         existingPelicula.setFechaModificacion(LocalDateTime.now());
         semperteguiRepository.save(existingPelicula);
         return existingPelicula.getId();
+    }
+
+    // vaciar tabla película (solo administrador)
+    public Long empty() {
+        if (!sessionService.isSessionActive()) {
+            throw new UnauthorizedException("No active session");
+        }
+        Long total = semperteguiRepository.count();
+        semperteguiRepository.deleteAll();
+        return total;
     }
 }

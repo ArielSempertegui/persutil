@@ -14,9 +14,9 @@ import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import jdk.jfr.BooleanFlag;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import jdk.jfr.BooleanFlag;
 
 @Entity
 @Table(name="sempertegui_pelicula")
@@ -35,6 +35,10 @@ public class SemperteguiEntity {
     @NotNull
     @Size(min=3, max=255)
     private String genero;
+
+    @NotNull
+    @Size(min=3, max=1024)
+    private String sinopsis;
 
     @NotNull
     @Size(min=3, max=255)

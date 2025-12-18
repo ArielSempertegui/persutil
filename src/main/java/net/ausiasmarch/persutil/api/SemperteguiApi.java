@@ -65,6 +65,12 @@ public class SemperteguiApi {
         return ResponseEntity.ok(semperteguiService.delete(id));
     }
 
+    // vaciar tabla película (solo administradores)
+    @DeleteMapping("/empty")
+    public ResponseEntity<Long> empty() {
+        return ResponseEntity.ok(semperteguiService.empty());
+    }
+
     @GetMapping("/count")
     public ResponseEntity<Long> count() {
         return ResponseEntity.ok(semperteguiService.count()); 
