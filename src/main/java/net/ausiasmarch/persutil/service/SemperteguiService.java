@@ -36,7 +36,7 @@ public class SemperteguiService {
     private static final String[] APELLIDOS = {"Kubrick", "Tarantino", "Nolan", "Gerwing", "Villeneuve", "Spielberg", "Almodóvar", "Bayona", "Smith"}; 
 
     // Generadora de frases Aleatorias
-    public static String generarFrase(int min, int max, boolean esTitulo) {
+    public static String generarPalabras(int min, int max, boolean esTitulo) {
         Random random = new Random();
         // Determinar la longitud aleatoria entre min y max
         int longitud = random.nextInt((max - min) + 1) + min;
@@ -70,7 +70,7 @@ public class SemperteguiService {
 
         for (long j = 0; j < numPosts; j++) {
             SemperteguiEntity semperteguiEntity = new SemperteguiEntity();
-            semperteguiEntity.setTitulo(generarFrase(1, 4, true));
+            semperteguiEntity.setTitulo(generarPalabras(1, 4, true));
             String generos = "";
             int numGeneros = aleatorioService.GenerarNumeroAleatorioEnteroEnRango(1, 3);
             for (int i = 0; i < numGeneros; i++) {
@@ -83,16 +83,14 @@ public class SemperteguiService {
             if (generos.endsWith(", ")) {
                 generos = generos.substring(0, generos.length() - 2);
             }
-            semperteguiEntity.setGenero(generos);
-            semperteguiEntity.setSinopsis(generarFrase(5, 30, false));
+            semperteguiEntity.setGeneros(generos);
+            semperteguiEntity.setSinopsis(generarPalabras(5, 30, false));
             semperteguiEntity.setDirector(NOMBRES[aleatorioService.GenerarNumeroAleatorioEnteroEnRango(0, NOMBRES.length - 1)] + " " + APELLIDOS[aleatorioService.GenerarNumeroAleatorioEnteroEnRango(0, APELLIDOS.length - 1)]);
             semperteguiEntity.setPuntuacion(aleatorioService.GenerarNumeroAleatorioEnteroEnRango(0, 100));
             semperteguiEntity.setAnyo(aleatorioService.GenerarNumeroAleatorioEnteroEnRango(1901, LocalDateTime.now().getYear()));
             semperteguiEntity.setPublicado(aleatorioService.GenerarNumeroAleatorioEnteroEnRango(0, 1) == 1);
             semperteguiEntity.setFechaCreacion(LocalDateTime.now());
             semperteguiEntity.setFechaModificacion(null);
-            // poner la flag de publicado aleatoriamente
-            // semperteguiEntity.setPublicado(aleatorioService.GenerarNumeroAleatorioEnteroEnRango(0, 1) == 1);
             semperteguiRepository.save(semperteguiEntity);
         }
 
@@ -129,7 +127,7 @@ public class SemperteguiService {
 
         SemperteguiEntity existingPelicula = semperteguiRepository.findById(semperteguiEntity.getId()).orElseThrow(() -> new ResourceNotFoundException("Movie not found"));
         existingPelicula.setTitulo(semperteguiEntity.getTitulo());
-        existingPelicula.setGenero(semperteguiEntity.getGenero());
+        existingPelicula.setGeneros(semperteguiEntity.getGeneros());
         existingPelicula.setSinopsis(semperteguiEntity.getSinopsis());
         existingPelicula.setDirector(semperteguiEntity.getDirector());
         existingPelicula.setPuntuacion(semperteguiEntity.getPuntuacion());

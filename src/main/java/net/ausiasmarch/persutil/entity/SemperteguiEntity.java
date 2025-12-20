@@ -34,10 +34,10 @@ public class SemperteguiEntity {
 
     @NotNull
     @Size(min=3, max=255)
-    private String genero;
+    private String generos;
 
     @NotNull
-    @Size(min=3, max=1024)
+    @Size(min=10, max=1024)
     private String sinopsis;
 
     @NotNull

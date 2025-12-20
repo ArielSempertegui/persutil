@@ -248,7 +248,7 @@ CREATE TABLE `recurso` (
 CREATE TABLE `sempertegui_pelicula` (
   `id` bigint NOT NULL,
   `titulo` varchar(255) CHARACTER SET utf32 COLLATE utf32_unicode_ci NOT NULL,
-  `genero` varchar(255) CHARACTER SET utf32 COLLATE utf32_unicode_ci NOT NULL,
+  `generos` varchar(255) CHARACTER SET utf32 COLLATE utf32_unicode_ci NOT NULL,
   `sinopsis` varchar(1024) CHARACTER SET utf32 COLLATE utf32_unicode_ci NOT NULL,
   `director` varchar(255) CHARACTER SET utf32 COLLATE utf32_unicode_ci NOT NULL,
   `puntuacion` int NOT NULL,
