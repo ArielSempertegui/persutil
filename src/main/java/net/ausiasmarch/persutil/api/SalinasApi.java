@@ -56,6 +56,12 @@ public class SalinasApi {
         return ResponseEntity.ok(oSalinasService.delete(id));
     }
 
+    // vaciar tabla blog (solo administradores)
+    @DeleteMapping("/empty")
+    public ResponseEntity<Long> empty() {
+        return ResponseEntity.ok(oSalinasService.empty());
+    }
+
     // listado paginado de posts
     @GetMapping("")
     public ResponseEntity<Page<SalinasEntity>> getPage(Pageable oPageable) {
@@ -68,5 +74,18 @@ public class SalinasApi {
         return ResponseEntity.ok(oSalinasService.count()); 
     }
 
+     // publicar post
+    @PutMapping("/publicar/{id}")
+    public ResponseEntity<Long> publicar(@PathVariable Long id) {
+        return ResponseEntity.ok(oSalinasService.publicar(id));
+    }
+
+    // despublicar post
+    @PutMapping("/despublicar/{id}")
+    public ResponseEntity<Long> despublicar(@PathVariable Long id) {
+        return ResponseEntity.ok(oSalinasService.despublicar(id));
+    }
+
+     
 
 }

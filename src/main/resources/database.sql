@@ -222,6 +222,7 @@ CREATE TABLE `receta` (
   `nombre` varchar(1024) CHARACTER SET utf32 COLLATE utf32_unicode_ci NOT NULL,
   `ingredientes` longtext CHARACTER SET utf32 COLLATE utf32_unicode_ci NOT NULL,
   `preparacion` longtext CHARACTER SET utf32 COLLATE utf32_unicode_ci NOT NULL,
+  `publicado` tinyint(1) NOT NULL,
   `fecha_creacion` datetime NOT NULL,
   `fecha_modificacion` datetime DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf32 COLLATE=utf32_unicode_ci;

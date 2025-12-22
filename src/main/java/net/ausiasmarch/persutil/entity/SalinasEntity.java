@@ -37,6 +37,8 @@ public class SalinasEntity {
     @Size(min = 3)
     private String preparacion;
     @NotNull
+    private boolean publicado;
+    @NotNull
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", shape = JsonFormat.Shape.STRING)
     private LocalDateTime fechaCreacion;
     @Nullable
