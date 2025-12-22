@@ -9,6 +9,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import net.ausiasmarch.persutil.entity.CastanyeraEntity;
+import net.ausiasmarch.persutil.exception.ResourceNotFoundException;
+import net.ausiasmarch.persutil.exception.UnauthorizedException;
 import net.ausiasmarch.persutil.repository.CastanyeraRepository;
 
 @Service
@@ -19,6 +21,9 @@ public class CastanyeraService {
 
     @Autowired
     AleatorioService oAleatorioService;
+
+    @Autowired
+    SessionService oSessionService;
 
     ArrayList<String> alFrases = new ArrayList<>();
 
@@ -113,9 +118,9 @@ public Long rellenaCastanyera(Long numPosts) {
         oCastanyeraEntity.setEtiquetas(etiquetas);
         
         // establecer fecha de creación y modificación
-        oCastanyeraEntity.setFecha_creacion(LocalDateTime.now());
+        oCastanyeraEntity.setFechaCreacion(LocalDateTime.now());
         // evitar insertar NULL en la columna fecha_modificacion (DB la marca NOT NULL)
-        oCastanyeraEntity.setFecha_modificacion(oCastanyeraEntity.getFecha_creacion());
+        oCastanyeraEntity.setFechaModificacion(oCastanyeraEntity.getFechaCreacion());
         
         // establecer visibilidad ALEATORIA (público o privado)
         boolean esPublico = oAleatorioService.GenerarNumeroAleatorioEnteroEnRango(0, 1) == 1;
@@ -129,13 +134,21 @@ public Long rellenaCastanyera(Long numPosts) {
 
     // ----------------------------CRUD---------------------------------
     public CastanyeraEntity get(Long id) {
-        return oCastanyeraRepository.findById(id).orElseThrow(() -> new RuntimeException("Journal not found"));
+        if (oSessionService.isSessionActive()) {
+                 return oCastanyeraRepository.findById(id).orElseThrow(() -> new RuntimeException("Journal not found"));
+            } else{
+                CastanyeraEntity castanyeraEntity = oCastanyeraRepository.findByIdAndPublicoTrue(id);
+                if (castanyeraEntity == null) {
+                    throw new ResourceNotFoundException("Post not found or not published");
+                }
+                return castanyeraEntity;
+            }
     }
 
     public Long create(CastanyeraEntity castanyeraEntity) {
-    castanyeraEntity.setFecha_creacion(LocalDateTime.now());
+    castanyeraEntity.setFechaCreacion(LocalDateTime.now());
     // mantener fecha_modificacion igual a la de creación para evitar NULL en BD
-    castanyeraEntity.setFecha_modificacion(castanyeraEntity.getFecha_creacion());
+    castanyeraEntity.setFechaModificacion(castanyeraEntity.getFechaCreacion());
         // si no se especifica, por defecto público
         if (castanyeraEntity.getPublico() == null) {
             castanyeraEntity.setPublico(true);
@@ -154,7 +167,7 @@ public Long rellenaCastanyera(Long numPosts) {
         if (castanyeraEntity.getPublico() != null) {
             existingCastanyera.setPublico(castanyeraEntity.getPublico());
         }
-        existingCastanyera.setFecha_modificacion(LocalDateTime.now());
+        existingCastanyera.setFechaModificacion(LocalDateTime.now());
         oCastanyeraRepository.save(existingCastanyera);
         return existingCastanyera.getId();
     }
@@ -165,11 +178,43 @@ public Long rellenaCastanyera(Long numPosts) {
     }
 
     public Page<CastanyeraEntity> getPage(Pageable oPageable) {
-        return oCastanyeraRepository.findAll(oPageable);
+       // si no hay session activa, solo devolver los publicados
+        if (!oSessionService.isSessionActive()) {
+            return oCastanyeraRepository.findByPublicoTrue(oPageable);
+        } else {
+            return oCastanyeraRepository.findAll(oPageable);
+        }
     }
 
     public Long count() {
         return oCastanyeraRepository.count();
     }
+
+    // ---
+    public Long publicar(Long id) {
+        if (!oSessionService.isSessionActive()) {
+            throw new UnauthorizedException("No active session");
+        }
+        CastanyeraEntity existingCastanyera = oCastanyeraRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Post not found"));
+        existingCastanyera.setPublico(true);
+        existingCastanyera.setFechaModificacion(LocalDateTime.now());
+        oCastanyeraRepository.save(existingCastanyera);
+        return existingCastanyera.getId();
+    }
+
+    public Long despublicar(Long id) {
+        if (!oSessionService.isSessionActive()) {
+            throw new UnauthorizedException("No active session");
+        }
+        CastanyeraEntity existingCastanyera = oCastanyeraRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Post not found"));
+        existingCastanyera.setPublico(false);
+        existingCastanyera.setFechaModificacion(LocalDateTime.now());
+        oCastanyeraRepository.save(existingCastanyera);
+        return existingCastanyera.getId();
+    }
+
+
 
 }
