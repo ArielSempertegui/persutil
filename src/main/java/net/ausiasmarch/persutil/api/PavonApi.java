@@ -62,4 +62,21 @@ public class PavonApi {
     public ResponseEntity<Long> count() {
         return ResponseEntity.ok(oPavonService.count()); 
     }
+
+    @PostMapping("/generate-fake/{cantidad}")
+    public ResponseEntity<Long> generateFakeData(@PathVariable int cantidad) {
+        return ResponseEntity.ok(oPavonService.generateFakeData(cantidad));
+    }
+
+    // publicar post
+    @PutMapping("/publicar/{id}")
+    public ResponseEntity<Long> publicar(@PathVariable Long id) {
+        return ResponseEntity.ok(oPavonService.publicar(id));
+    }
+
+    // despublicar post
+    @PutMapping("/despublicar/{id}")
+    public ResponseEntity<Long> despublicar(@PathVariable Long id) {
+        return ResponseEntity.ok(oPavonService.despublicar(id));
+    }
 }

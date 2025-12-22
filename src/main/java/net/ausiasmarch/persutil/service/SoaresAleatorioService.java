@@ -65,11 +65,11 @@ public class SoaresAleatorioService {
         "Si la vida es un sueño, ¿cuándo es el momento de despertar?",
         "¿Qué pregunta te da más miedo responder?"
     };
-
+//
     public String getPreguntaNeuro() {
         return PREGUNTAS_NEURO[oAleatorioService.GenerarNumeroAleatorioEnteroEnRango(0, PREGUNTAS_NEURO.length - 1)];
     }
-
+    // Fecha de creación entre 1 y 365 días atrás
     public LocalDateTime getFechaCreacion() {
         return LocalDateTime.now().minusDays(oAleatorioService.GenerarNumeroAleatorioEnteroEnRango(1, 365));
     }

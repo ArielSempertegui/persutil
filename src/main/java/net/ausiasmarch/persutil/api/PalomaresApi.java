@@ -2,6 +2,7 @@ package net.ausiasmarch.persutil.api;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -12,68 +13,108 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import jakarta.validation.Valid;
 import net.ausiasmarch.persutil.entity.PalomaresEntity;
+import net.ausiasmarch.persutil.service.AleatorioService;
 import net.ausiasmarch.persutil.service.PalomaresService;
 
-@CrossOrigin(origins = "*")
+@CrossOrigin(origins = "*", allowedHeaders = "*")
 @RestController
-@RequestMapping("/Ian")
+@RequestMapping("/palomares")
 public class PalomaresApi {
 
     @Autowired
-    private PalomaresService palomaresService;
+    AleatorioService oAleatorioService;
 
-    @GetMapping("/{id}")
-    public ResponseEntity<PalomaresEntity> get(@PathVariable Long id) {
-        return ResponseEntity.ok(palomaresService.get(id));
-    }
-
-    @GetMapping("")
-    public ResponseEntity<Page<PalomaresEntity>> getPage(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size
-    ) {
-        return ResponseEntity.ok(palomaresService.getPage(page, size));
-    }
-
-    @PostMapping("")
-    public ResponseEntity<PalomaresEntity> create(@Valid @RequestBody PalomaresEntity t) {
-        return ResponseEntity.ok(palomaresService.create(t));
-    }
-
-    @PutMapping("/{id}")
-    public ResponseEntity<PalomaresEntity> update(@PathVariable Long id, @Valid @RequestBody PalomaresEntity t) {
-        return ResponseEntity.ok(palomaresService.update(id, t));
-    }
-
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
-        palomaresService.delete(id);
-        return ResponseEntity.noContent().build();
-    }
-
-    @PostMapping("/populate/{amount}")
-    public ResponseEntity<Integer> populate(@PathVariable int amount) {
-        return ResponseEntity.ok(palomaresService.populate(amount));
-    }
+    @Autowired
+    PalomaresService oPalomaresService;
 
     @GetMapping("/saludar")
     public ResponseEntity<String> saludar() {
-        return new ResponseEntity<>("\"Hola desde el blog\"", HttpStatus.OK);
+        return new ResponseEntity<>("\"Hola desde palomares\"", HttpStatus.OK);
     }
+
+    @GetMapping("/saludar/buenosdias")
+    public ResponseEntity<String> saludarPorLaMañana() {
+        return new ResponseEntity<>("\"Hola buenos dias desde palomares\"", HttpStatus.OK);
+    }
+
+    @GetMapping("/aleatorio")
+    public ResponseEntity<Integer> aleatorio() {
+        int numeroAleatorio = (int) (Math.random() * 100) + 1;
+        return ResponseEntity.ok(numeroAleatorio);
+    }
+
+    @GetMapping("/aleatorio/{min}/{max}")
+    public ResponseEntity<Integer> aleatorioEnRango(
+            @PathVariable int min,
+            @PathVariable int max) {
+        int numeroAleatorio = (int) (Math.random() * (max - min + 1)) + min;
+        return ResponseEntity.ok(numeroAleatorio);
+    }
+
+    @GetMapping("/aleatorio/service/{min}/{max}")
+    public ResponseEntity<Integer> aleatorioUsandoServiceEnRango(
+            @PathVariable int min,
+            @PathVariable int max) {
+        return ResponseEntity.ok(oAleatorioService.GenerarNumeroAleatorioEnteroEnRango(min, max));
+    }
+
+    // ---------------------------Rellenar datos fake---------------------------------
 
     @GetMapping("/rellena/{numTareas}")
-    public ResponseEntity<Integer> rellenaTareas(@PathVariable int numTareas) {
-        return ResponseEntity.ok(palomaresService.populate(numTareas));
+    public ResponseEntity<Long> rellenaTareas(
+            @PathVariable Long numTareas) {
+        return ResponseEntity.ok(oPalomaresService.rellenaTareas(numTareas));
     }
 
-    @GetMapping("/estadisticas")
-    public ResponseEntity<String> obtenerEstadisticas() {
-        long totalTareas = palomaresService.getPage(0, Integer.MAX_VALUE).getTotalElements();
-        return ResponseEntity.ok("Total de tareas en la base de datos: " + totalTareas);
+    // ----------------------------CRUD---------------------------------
+
+    @GetMapping("/{id}")
+    public ResponseEntity<PalomaresEntity> get(@PathVariable Long id) {
+        return ResponseEntity.ok(oPalomaresService.get(id));
+    }
+
+    @PostMapping("")
+    public ResponseEntity<Long> create(@RequestBody PalomaresEntity palomaresEntity) {
+        return ResponseEntity.ok(oPalomaresService.create(palomaresEntity));
+    }
+
+    @PutMapping("")
+    public ResponseEntity<Long> update(@RequestBody PalomaresEntity palomaresEntity) {
+        return ResponseEntity.ok(oPalomaresService.update(palomaresEntity));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Long> delete(@PathVariable Long id) {
+        return ResponseEntity.ok(oPalomaresService.delete(id));
+    }
+
+    @DeleteMapping("/empty")
+    public ResponseEntity<Long> empty() {
+        return ResponseEntity.ok(oPalomaresService.empty());
+    }
+
+    @GetMapping("")
+    public ResponseEntity<Page<PalomaresEntity>> getPage(Pageable oPageable) {
+        return ResponseEntity.ok(oPalomaresService.getPage(oPageable));
+    }
+
+    @GetMapping("/count")
+    public ResponseEntity<Long> count() {
+        return ResponseEntity.ok(oPalomaresService.count());
+    }
+
+    // -----
+
+    @PutMapping("/publicar/{id}")
+    public ResponseEntity<Long> publicar(@PathVariable Long id) {
+        return ResponseEntity.ok(oPalomaresService.publicar(id));
+    }
+
+    @PutMapping("/despublicar/{id}")
+    public ResponseEntity<Long> despublicar(@PathVariable Long id) {
+        return ResponseEntity.ok(oPalomaresService.despublicar(id));
     }
 }

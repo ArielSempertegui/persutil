@@ -63,6 +63,7 @@ public class FernandezIdeaApi {
             @RequestParam(name = "page", defaultValue = "0") int page,
             @RequestParam(name = "size", defaultValue = "10") int size,
             @RequestParam(name = "publico", required = false) Boolean publico,
+        @RequestParam(name = "filter", required = false) String filter,
             @RequestParam(name = "sort", defaultValue = "fechaCreacion") String sort,
             @RequestParam(name = "direction", required = false) String direction) {
         // Support both styles:
@@ -79,13 +80,38 @@ public class FernandezIdeaApi {
                 dir = parts[1];
             }
         }
-        return ResponseEntity.ok(oIdeaService.getPageFiltered(page, size, publico, sortField, dir));
+        return ResponseEntity.ok(oIdeaService.getPageFiltered(page, size, publico, filter, sortField, dir));
     }
 
     // contar ideas (opcionalmente filtrado por publico)
     @GetMapping("/count")
-    public ResponseEntity<Long> count(@RequestParam(name = "publico", required = false) Boolean publico) {
-        return ResponseEntity.ok(oIdeaService.countFiltered(publico));
+    public ResponseEntity<Long> count(
+            @RequestParam(name = "publico", required = false) Boolean publico,
+            @RequestParam(name = "filter", required = false) String filter) {
+        return ResponseEntity.ok(oIdeaService.countFiltered(publico, filter));
+    }
+
+    // total sin filtro (pensado para admin)
+    @GetMapping("/count/total")
+    public ResponseEntity<Long> countTotal() {
+        return ResponseEntity.ok(oIdeaService.countTotal());
+    }
+
+    // publicar/despublicar (botón de publicación)
+    @PutMapping("/publicar/{id}")
+    public ResponseEntity<Long> publicar(@PathVariable Long id) {
+        return ResponseEntity.ok(oIdeaService.publicar(id));
+    }
+
+    @PutMapping("/despublicar/{id}")
+    public ResponseEntity<Long> despublicar(@PathVariable Long id) {
+        return ResponseEntity.ok(oIdeaService.despublicar(id));
+    }
+
+    // vaciar tabla (elimina todos los registros)
+    @DeleteMapping("/empty")
+    public ResponseEntity<Long> empty() {
+        return ResponseEntity.ok(oIdeaService.empty());
     }
 
 }

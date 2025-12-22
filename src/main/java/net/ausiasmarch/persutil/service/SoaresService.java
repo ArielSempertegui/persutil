@@ -8,7 +8,6 @@ import java.util.concurrent.ThreadLocalRandom;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 
 import net.ausiasmarch.persutil.entity.SoaresEntity;
@@ -27,7 +26,7 @@ public class SoaresService {
         return oSoaresRepository.findByPublicacionFalse(oPageable);
     }
 
-    public SoaresEntity get(@NonNull Long id) {
+    public SoaresEntity get(Long id) {
         return oSoaresRepository.findById(id).orElse(null);
     }
 
@@ -54,12 +53,12 @@ public class SoaresService {
         }
     }
 
-    public Long delete(@NonNull Long id) {
+    public Long delete(Long id) {
         oSoaresRepository.deleteById(id);
         return id;
     }
 
-    public Page<SoaresEntity> getPage(@NonNull Pageable oPageable, String filter) {
+    public Page<SoaresEntity> getPage(Pageable oPageable, String filter) {
         if (filter == null || filter.isEmpty()) {
             return oSoaresRepository.findAll(oPageable);
         } else {
@@ -93,6 +92,14 @@ public class SoaresService {
         oSoaresRepository.deleteAll();
         oSoaresRepository.flush();
         return oSoaresRepository.count();
+    }
+
+    public boolean checkPreguntaExists(String pregunta, Long excludeId) {
+        if (excludeId != null) {
+            return oSoaresRepository.existsByPreguntasIgnoreCaseAndIdNot(pregunta, excludeId);
+        } else {
+            return oSoaresRepository.existsByPreguntasIgnoreCase(pregunta);
+        }
     }
 
 }

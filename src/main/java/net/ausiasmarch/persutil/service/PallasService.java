@@ -81,6 +81,17 @@ public class PallasService {
         return updatedEntity.getId();
     }
 
+public Page<PallasEntity> getPage(Pageable pageable, String filter) {
+    if (filter == null || filter.isBlank()) {
+        return oPallasRepository.findAll(pageable);
+    } else {
+        return oPallasRepository.findByTituloContainingIgnoreCaseOrContenidoContainingIgnoreCase(
+                filter, filter, pageable
+            );
+    }
+}
+
+
 
 
 } 

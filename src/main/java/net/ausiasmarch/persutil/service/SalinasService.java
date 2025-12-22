@@ -7,7 +7,10 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+
 import net.ausiasmarch.persutil.entity.SalinasEntity;
+import net.ausiasmarch.persutil.exception.ResourceNotFoundException;
+import net.ausiasmarch.persutil.exception.UnauthorizedException;
 import net.ausiasmarch.persutil.repository.SalinasRepository;
 
 @Service
@@ -16,8 +19,14 @@ public class SalinasService {
     // INYECCIÓN DE DEPENDENCIA DEBE IR AL INICIO
     @Autowired
     SalinasRepository oSalinasRepository;
+
+    @Autowired
+    SessionService oSessionService;
     
     public Long bulkCreate(Long amount) {
+        if (!oSessionService.isSessionActive()) {
+            throw new UnauthorizedException("No active session");
+        }
         String[] nombres = {"Paella de marisco", "Tortilla de patatas", "Gazpacho andaluz", "Fideuá", "Tarta de queso casera", "Lentejas estofadas"};
         
         String[] ingredientes = {
@@ -47,7 +56,7 @@ public class SalinasService {
             receta.setNombre(nombres[indice]);
             receta.setIngredientes(ingredientes[indice]);
             receta.setPreparacion(preparaciones[indice]); 
-            
+            receta.setPublicado(true);
             receta.setFechaCreacion(LocalDateTime.now());
             receta.setFechaModificacion(null);      
             oSalinasRepository.save(receta);
@@ -57,10 +66,22 @@ public class SalinasService {
   
     // ----------------------------CRUD---------------------------------
     public SalinasEntity get(Long id) {
-        return oSalinasRepository.findById(id).orElseThrow(() -> new RuntimeException("Blog not found"));
+        if (!oSessionService.isSessionActive()) {
+            SalinasEntity receta = oSalinasRepository.findById(id)
+                    .orElseThrow(() -> new ResourceNotFoundException("Receta not found"));
+            if (Boolean.TRUE.equals(receta.isPublicado())) {
+                return receta;
+            }
+            throw new ResourceNotFoundException("Receta not found");
+        }
+        return oSalinasRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Receta not found"));
     }
 
     public Long create(SalinasEntity salinasEntity) {
+        if (!oSessionService.isSessionActive()) {
+            throw new UnauthorizedException("No active session");
+        }
         salinasEntity.setFechaCreacion(LocalDateTime.now());
         salinasEntity.setFechaModificacion(null);
         oSalinasRepository.save(salinasEntity);
@@ -68,26 +89,76 @@ public class SalinasService {
     }
 
     public Long update(SalinasEntity salinasEntity) {
+        if (!oSessionService.isSessionActive()) {
+                        throw new UnauthorizedException("No active session");
+                }
         SalinasEntity existingSalinas = oSalinasRepository.findById(salinasEntity.getId())
-                .orElseThrow(() -> new RuntimeException("Salinas not found"));
+                .orElseThrow(() -> new RuntimeException("Receta not found"));
         existingSalinas.setNombre(salinasEntity.getNombre());
         existingSalinas.setIngredientes(salinasEntity.getIngredientes());
         existingSalinas.setPreparacion(salinasEntity.getPreparacion());
         existingSalinas.setFechaModificacion(LocalDateTime.now());
+        existingSalinas.setPublicado(salinasEntity.isPublicado());
         oSalinasRepository.save(existingSalinas);
         return existingSalinas.getId();
     }
 
     public Long delete(Long id) {
+        if (!oSessionService.isSessionActive()) {
+            throw new UnauthorizedException("No active session");
+        }
         oSalinasRepository.deleteById(id);
         return id;
     }
 
     public Page<SalinasEntity> getPage(Pageable oPageable) {
+         if (!oSessionService.isSessionActive()) {
+            return oSalinasRepository.findByPublicado(true, oPageable);
+        }
         return oSalinasRepository.findAll(oPageable);
     }
 
+   
+
+    
+
+    public Long publicar(Long id) {
+        if (!oSessionService.isSessionActive()) {
+            throw new UnauthorizedException("No active session");
+        }
+        SalinasEntity existing = oSalinasRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Salinas not found"));
+        existing.setPublicado(true);
+        // fechaModificacion se asigna automáticamente con @PreUpdate
+        oSalinasRepository.save(existing);
+        return existing.getId();
+    }
+
+    public Long despublicar(Long id) {
+        if (!oSessionService.isSessionActive()) {
+            throw new UnauthorizedException("No active session");
+        }
+        SalinasEntity existing = oSalinasRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Salinas not found"));
+        existing.setPublicado(false);
+        // fechaModificacion se asigna automáticamente con @PreUpdate
+        oSalinasRepository.save(existing);
+        return existing.getId();
+    }
+
+
+
     public Long count() {
         return oSalinasRepository.count();
+    }
+
+    // vaciar tabla blog (solo administrador)
+    public Long empty() {
+        if (!oSessionService.isSessionActive()) {
+            throw new UnauthorizedException("No active session");
+        }
+        Long total = oSalinasRepository.count();
+        oSalinasRepository.deleteAll();
+        return total;
     }
 }

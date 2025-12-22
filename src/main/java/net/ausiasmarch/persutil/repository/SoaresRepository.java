@@ -14,4 +14,8 @@ public interface SoaresRepository extends JpaRepository<SoaresEntity, Long> {
     Page<SoaresEntity> findByPreguntasContainingIgnoreCase(String preguntas, Pageable oPageable);
 
     Page<SoaresEntity> findByPublicacionTrueAndPreguntasContainingIgnoreCase(String preguntas, Pageable oPageable);
+
+    boolean existsByPreguntasIgnoreCase(String preguntas);
+
+    boolean existsByPreguntasIgnoreCaseAndIdNot(String preguntas, Long id);
 }

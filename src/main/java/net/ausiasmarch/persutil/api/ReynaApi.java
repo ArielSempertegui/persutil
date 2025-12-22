@@ -25,10 +25,9 @@ public class ReynaApi {
     @Autowired
     ReynaService oReynaService;
 
-     @GetMapping("/rellena/{numPosts}")
+    @GetMapping("/rellena/{numPosts}")
     public ResponseEntity<Long> rellenaBlog(
-            @PathVariable Long numPosts
-    ) {
+            @PathVariable Long numPosts) {
         return ResponseEntity.ok(oReynaService.createRandom(numPosts));
     }
 
@@ -52,6 +51,12 @@ public class ReynaApi {
         return ResponseEntity.ok(oReynaService.delete(id));
     }
 
+    // vaciar tabla blog (solo administradores)
+    @DeleteMapping("/empty")
+    public ResponseEntity<Long> empty() {
+        return ResponseEntity.ok(oReynaService.empty());
+    }
+
     @GetMapping("")
     public ResponseEntity<Page<ReynaEntity>> getPage(Pageable oPageable) {
         return ResponseEntity.ok(oReynaService.getPage(oPageable));
@@ -60,5 +65,17 @@ public class ReynaApi {
     @GetMapping("/count")
     public ResponseEntity<Long> count() {
         return ResponseEntity.ok(oReynaService.count());
+    }
+
+    // publicar
+    @PutMapping("/publicar/{id}")
+    public ResponseEntity<Long> publicar(@PathVariable Long id) {
+        return ResponseEntity.ok(oReynaService.publicar(id));
+    }
+
+    // despublicar post
+    @PutMapping("/despublicar/{id}")
+    public ResponseEntity<Long> despublicar(@PathVariable Long id) {
+        return ResponseEntity.ok(oReynaService.despublicar(id));
     }
 }

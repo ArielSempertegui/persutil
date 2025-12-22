@@ -1,5 +1,7 @@
 package net.ausiasmarch.persutil.api;
 
+import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -82,6 +84,15 @@ public class SoaresApi {
     @DeleteMapping("/empty")
     public ResponseEntity<Long> empty() {
         return ResponseEntity.ok(oSoaresService.empty());
+    }
+
+    // Validar si existe una pregunta duplicada
+    @PostMapping("/check-exists")
+    public ResponseEntity<Boolean> checkExists(
+            @RequestBody Map<String, String> request,
+            @RequestParam(name = "excludeId", required = false) Long excludeId) {
+        String pregunta = request.get("pregunta");
+        return ResponseEntity.ok(oSoaresService.checkPreguntaExists(pregunta, excludeId));
     }
 
 }

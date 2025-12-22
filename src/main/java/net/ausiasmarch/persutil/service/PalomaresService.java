@@ -1,106 +1,197 @@
 package net.ausiasmarch.persutil.service;
 
-
-import java.util.Random;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import net.ausiasmarch.persutil.entity.PalomaresEntity;
+import net.ausiasmarch.persutil.exception.ResourceNotFoundException;
+import net.ausiasmarch.persutil.exception.UnauthorizedException;
 import net.ausiasmarch.persutil.repository.PalomaresRepository;
 
 @Service
 public class PalomaresService {
 
     @Autowired
-    private PalomaresRepository palomaresRepository;
+    PalomaresRepository oPalomaresRepository;
 
+    @Autowired
+    AleatorioService oAleatorioService;
 
-// Removed duplicate simple populate; the more complete populate(int) implementation further below is used.
+    @Autowired
+    SessionService oSessionService;
 
+    ArrayList<String> alTitulos = new ArrayList<>();
+    ArrayList<String> alDescripciones = new ArrayList<>();
+    ArrayList<String> alCategorias = new ArrayList<>();
 
-    public PalomaresEntity get(Long id) {
-        return palomaresRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Tarea no encontrada"));
+    public PalomaresService() {
+        alTitulos.add("Terminar proyecto de presentación");
+        alTitulos.add("Comprar artículos necesarios");
+        alTitulos.add("Organizar reunión de equipo");
+        alTitulos.add("Planificar entrenamiento mensual");
+        alTitulos.add("Revisar documentación técnica");
+        alTitulos.add("Estudiar para el examen");
+        alTitulos.add("Leer sobre nuevas tecnologías");
+        alTitulos.add("Hacer ejercicio en el gimnasio");
+        alTitulos.add("Llamar a soporte técnico");
+        alTitulos.add("Limpiar el área de trabajo");
+        alTitulos.add("Preparar informe mensual");
+        alTitulos.add("Actualizar el sistema");
+        alTitulos.add("Configurar servidor de producción");
+        alTitulos.add("Aprender nuevo framework");
+        alTitulos.add("Practicar algoritmos");
+
+        alDescripciones.add("Esta es una tarea importante que requiere atención inmediata.");
+        alDescripciones.add("Tarea programada para completar durante esta semana.");
+        alDescripciones.add("Actividad de seguimiento que debe realizarse periódicamente.");
+        alDescripciones.add("Proyecto a largo plazo que necesita planificación detallada.");
+        alDescripciones.add("Tarea urgente con alta prioridad de ejecución.");
+        alDescripciones.add("Actividad opcional pero recomendable para el desarrollo personal.");
+        alDescripciones.add("Tarea colaborativa que involucra a varios miembros del equipo.");
+        alDescripciones.add("Proyecto individual que requiere concentración y dedicación.");
+
+        alCategorias.add("Trabajo");
+        alCategorias.add("Casa");
+        alCategorias.add("Estudios");
+        alCategorias.add("Deporte");
+        alCategorias.add("Compras");
+        alCategorias.add("Salud");
+        alCategorias.add("Familia");
+        alCategorias.add("Viajes");
+        alCategorias.add("Tecnología");
+        alCategorias.add("Hobby");
     }
 
-    public Page<PalomaresEntity> getPage(int page, int size) {
-        Pageable pageable = PageRequest.of(page, size, Sort.by("fechaCreacion").descending());
-        return palomaresRepository.findAll(pageable);
-    }
+    public Long rellenaTareas(Long numTareas) {
 
-    public PalomaresEntity create(PalomaresEntity t) {
-        t.setId(null);
-        return palomaresRepository.save(t);
-    }
-
-    public PalomaresEntity update(Long id, PalomaresEntity t) {
-        PalomaresEntity existing = get(id);
-        existing.setTitulo(t.getTitulo());
-        existing.setDescripcion(t.getDescripcion());
-        existing.setCategoria(t.getCategoria());
-        existing.setCompletada(t.getCompletada());
-        existing.setPublicado(t.getPublicado());
-        return palomaresRepository.save(existing);
-    }
-
-    public void delete(Long id) {
-        palomaresRepository.deleteById(id);
-    }
-
-    public int populate(int amount) {
-        Random rnd = new Random();
-
-        String[] categorias = {"Trabajo", "Casa", "Estudios", "Deporte", "Compras", "Salud", "Familia", "Viajes", "Tecnología", "Hobby"};
-        String[] titulosPrefijos = {
-            "Terminar proyecto de", "Comprar", "Organizar", "Planificar", "Revisar", 
-            "Estudiar", "Leer sobre", "Hacer ejercicio en", "Llamar a", "Limpiar",
-            "Preparar", "Actualizar", "Configurar", "Aprender", "Practicar"
-        };
-        String[] objetivos = {
-            "presentación", "informe", "reunión", "entrenamiento", "cita médica",
-            "documentación", "sistema", "aplicación", "curso", "examen",
-            "casa", "oficina", "proyecto", "presupuesto", "calendario",
-            "curriculum", "portfolio", "base de datos", "servidor", "equipo"
-        };
-
-        for (int i = 0; i < amount; i++) {
-            PalomaresEntity t = new PalomaresEntity();
-            
-            // Generar títulos más variados
-            String prefijo = titulosPrefijos[rnd.nextInt(titulosPrefijos.length)];
-            String objetivo = objetivos[rnd.nextInt(objetivos.length)];
-            t.setTitulo(prefijo + " " + objetivo + " #" + (i + 1));
-            
-            // Generar descripciones más detalladas
-            String[] descripciones = {
-                "Esta es una tarea importante que requiere atención inmediata.",
-                "Tarea programada para completar durante esta semana.",
-                "Actividad de seguimiento que debe realizarse periódicamente.",
-                "Proyecto a largo plazo que necesita planificación detallada.",
-                "Tarea urgente con alta prioridad de ejecución.",
-                "Actividad opcional pero recomendable para el desarrollo personal.",
-                "Tarea colaborativa que involucra a varios miembros del equipo.",
-                "Proyecto individual que requiere concentración y dedicación."
-            };
-            t.setDescripcion(descripciones[rnd.nextInt(descripciones.length)] + " Generada automáticamente el " + java.time.LocalDateTime.now().toString().substring(0, 19));
-            
-            // Asignar categoría aleatoria
-            t.setCategoria(categorias[rnd.nextInt(categorias.length)]);
-            
-            // Estado aleatorio con mayor probabilidad de estar pendiente
-            t.setCompletada(rnd.nextInt(100) < 30); // 30% de probabilidad de estar completada
-            
-            // Todas las tareas serán públicas
-            t.setPublicado(true);
-            
-            palomaresRepository.save(t);
+        if (!oSessionService.isSessionActive()) {
+            throw new UnauthorizedException("No active session");
         }
-        return amount;
+
+        for (long j = 0; j < numTareas; j++) {
+            PalomaresEntity oPalomaresEntity = new PalomaresEntity();
+            oPalomaresEntity.setTitulo(
+                    alTitulos.get(oAleatorioService.GenerarNumeroAleatorioEnteroEnRango(0, alTitulos.size() - 1)));
+            
+            String descripcionGenerada = "";
+            int numFrases = oAleatorioService.GenerarNumeroAleatorioEnteroEnRango(1, 3);
+            for (int i = 1; i <= numFrases; i++) {
+                descripcionGenerada += alDescripciones
+                        .get(oAleatorioService.GenerarNumeroAleatorioEnteroEnRango(0, alDescripciones.size() - 1)) + " ";
+            }
+            oPalomaresEntity.setDescripcion(descripcionGenerada.trim());
+            
+            oPalomaresEntity.setCategoria(
+                    alCategorias.get(oAleatorioService.GenerarNumeroAleatorioEnteroEnRango(0, alCategorias.size() - 1)));
+            
+            oPalomaresEntity.setFechaCreacion(LocalDateTime.now());
+            oPalomaresEntity.setFechaModificacion(null);
+            
+            oPalomaresEntity.setCompletada(oAleatorioService.GenerarNumeroAleatorioEnteroEnRango(0, 1) == 1);
+            oPalomaresEntity.setPublicado(oAleatorioService.GenerarNumeroAleatorioEnteroEnRango(0, 1) == 1);
+            
+            oPalomaresRepository.save(oPalomaresEntity);
+        }
+        return oPalomaresRepository.count();
     }
+
+    // ----------------------------CRUD---------------------------------
+    public PalomaresEntity get(Long id) {
+        if (oSessionService.isSessionActive()) {
+            return oPalomaresRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Tarea not found"));
+        } else {
+            PalomaresEntity palomaresEntity = oPalomaresRepository.findByIdAndPublicadoTrue(id);
+            if (palomaresEntity == null) {
+                throw new ResourceNotFoundException("Tarea not found or not published");
+            }
+            return palomaresEntity;
+        }
+    }
+
+    public Long create(PalomaresEntity palomaresEntity) {
+        if (!oSessionService.isSessionActive()) {
+            throw new UnauthorizedException("No active session");
+        }
+        palomaresEntity.setFechaCreacion(LocalDateTime.now());
+        palomaresEntity.setFechaModificacion(null);
+        oPalomaresRepository.save(palomaresEntity);
+        return palomaresEntity.getId();
+    }
+
+    public Long update(PalomaresEntity palomaresEntity) {
+        if (!oSessionService.isSessionActive()) {
+            throw new UnauthorizedException("No active session");
+        }
+        PalomaresEntity existingTarea = oPalomaresRepository.findById(palomaresEntity.getId())
+                .orElseThrow(() -> new ResourceNotFoundException("Tarea not found"));
+        existingTarea.setTitulo(palomaresEntity.getTitulo());
+        existingTarea.setDescripcion(palomaresEntity.getDescripcion());
+        existingTarea.setCategoria(palomaresEntity.getCategoria());
+        existingTarea.setCompletada(palomaresEntity.getCompletada());
+        existingTarea.setPublicado(palomaresEntity.getPublicado());
+        existingTarea.setFechaModificacion(LocalDateTime.now());
+        oPalomaresRepository.save(existingTarea);
+        return existingTarea.getId();
+    }
+
+    public Long delete(Long id) {
+        if (!oSessionService.isSessionActive()) {
+            throw new UnauthorizedException("No active session");
+        }
+        oPalomaresRepository.deleteById(id);
+        return id;
+    }
+
+    public Page<PalomaresEntity> getPage(Pageable oPageable) {
+        if (!oSessionService.isSessionActive()) {
+            return oPalomaresRepository.findByPublicadoTrue(oPageable);
+        } else {
+            return oPalomaresRepository.findAll(oPageable);
+        }
+    }
+
+    public Long count() {
+        return oPalomaresRepository.count();
+    }
+
+    // ---
+    public Long publicar(Long id) {
+        if (!oSessionService.isSessionActive()) {
+            throw new UnauthorizedException("No active session");
+        }
+        PalomaresEntity existingTarea = oPalomaresRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Tarea not found"));
+        existingTarea.setPublicado(true);
+        existingTarea.setFechaModificacion(LocalDateTime.now());
+        oPalomaresRepository.save(existingTarea);
+        return existingTarea.getId();
+    }
+
+    public Long despublicar(Long id) {
+        if (!oSessionService.isSessionActive()) {
+            throw new UnauthorizedException("No active session");
+        }
+        PalomaresEntity existingTarea = oPalomaresRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Tarea not found"));
+        existingTarea.setPublicado(false);
+        existingTarea.setFechaModificacion(LocalDateTime.now());
+        oPalomaresRepository.save(existingTarea);
+        return existingTarea.getId();
+    }
+
+    public Long empty() {
+        if (!oSessionService.isSessionActive()) {
+            throw new UnauthorizedException("No active session");
+        }
+        Long total = oPalomaresRepository.count();
+        oPalomaresRepository.deleteAll();
+        return total;
+    }
+
 }
 

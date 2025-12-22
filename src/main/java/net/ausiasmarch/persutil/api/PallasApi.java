@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import net.ausiasmarch.persutil.entity.BlogEntity;
@@ -64,8 +65,10 @@ public class PallasApi {
 
     // listado paginado de posts
     @GetMapping("")
-    public ResponseEntity<Page<PallasEntity>> getPage(Pageable oPageable) {
-        return ResponseEntity.ok(oPallasService.getPage(oPageable));
+    public ResponseEntity<Page<PallasEntity>> getPage(Pageable oPageable,
+        @RequestParam(required = false) String filter
+    ) {
+        return ResponseEntity.ok(oPallasService.getPage(oPageable, filter));
         
     }
 

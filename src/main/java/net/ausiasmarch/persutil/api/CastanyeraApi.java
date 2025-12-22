@@ -30,12 +30,41 @@ public class CastanyeraApi {
     @Autowired
     CastanyeraService oCastanyeraService;
 
-    //---------------------------Rellenar datos fake blog---------------------------------
+    @GetMapping("/saludar")
+    public ResponseEntity<String> saludar() {
+        return new ResponseEntity<>("\"Hola desde castanyera\"", HttpStatus.OK);
+    }
+
+    @GetMapping("/saludar/buenosdias")
+    public ResponseEntity<String> saludarPorLaManana() {
+        return new ResponseEntity<>("\"Hola buenos dias desde castanyera\"", HttpStatus.OK);
+    }
+
+    @GetMapping("/aleatorio") // endpoint
+    public ResponseEntity<Integer> aleatorio() {
+        int numeroAleatorio = (int) (Math.random() * 100) + 1;
+        return ResponseEntity.ok(numeroAleatorio);
+    }
+
+    @GetMapping("/aleatorio/{min}/{max}") // endpoint
+    public ResponseEntity<Integer> aleatorioEnRango(
+            @PathVariable int min,
+            @PathVariable int max) {
+        int numeroAleatorio = (int) (Math.random() * (max - min + 1)) + min;
+        return ResponseEntity.ok(numeroAleatorio);
+    }
+
+    @GetMapping("/aleatorio/service/{min}/{max}") // endpoint
+    public ResponseEntity<Integer> aleatorioUsandoServiceEnRango(
+            @PathVariable int min,
+            @PathVariable int max) {
+        return ResponseEntity.ok(oAleatorioService.GenerarNumeroAleatorioEnteroEnRango(min, max));
+    }
+
+    //---------------------------Rellenar datos fake castanyera---------------------------------
 
     @GetMapping("/rellena/{numPosts}")
-    public ResponseEntity<Long> rellenaCastanyera(
-            @PathVariable Long numPosts
-    ) {
+    public ResponseEntity<Long> rellenaCastanyera(@PathVariable Long numPosts) {
         return ResponseEntity.ok(oCastanyeraService.rellenaCastanyera(numPosts));
     }
 
@@ -80,4 +109,17 @@ public class CastanyeraApi {
         return ResponseEntity.ok(oCastanyeraService.count()); 
     }
 
+    // -----
+
+    // publicar post
+    @PutMapping("/publicar/{id}")
+    public ResponseEntity<Long> publicar(@PathVariable Long id) {
+        return ResponseEntity.ok(oCastanyeraService.publicar(id));
+    }
+
+    // despublicar post
+    @PutMapping("/despublicar/{id}")
+    public ResponseEntity<Long> despublicar(@PathVariable Long id) {
+        return ResponseEntity.ok(oCastanyeraService.despublicar(id));
+    }
 }

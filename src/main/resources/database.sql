@@ -156,8 +156,10 @@ CREATE TABLE `garcia` (
   `titulo` varchar(1000) CHARACTER SET utf32 COLLATE utf32_unicode_ci NOT NULL,
   `objetivo` varchar(1000) CHARACTER SET utf32 COLLATE utf32_unicode_ci NOT NULL,
   `fecha_inicio` datetime NOT NULL,
+  `fecha_modificacion` datetime DEFAULT NULL,
   `fecha_final` datetime NOT NULL,
-  `progreso` varchar(1000) CHARACTER SET utf32 COLLATE utf32_unicode_ci NOT NULL
+  `progreso` varchar(1000) CHARACTER SET utf32 COLLATE utf32_unicode_ci NOT NULL,
+  `publico` tinyint(1) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf32 COLLATE=utf32_unicode_ci;
 
 -- --------------------------------------------------------
@@ -220,6 +222,7 @@ CREATE TABLE `receta` (
   `nombre` varchar(1024) CHARACTER SET utf32 COLLATE utf32_unicode_ci NOT NULL,
   `ingredientes` longtext CHARACTER SET utf32 COLLATE utf32_unicode_ci NOT NULL,
   `preparacion` longtext CHARACTER SET utf32 COLLATE utf32_unicode_ci NOT NULL,
+  `publicado` tinyint(1) NOT NULL,
   `fecha_creacion` datetime NOT NULL,
   `fecha_modificacion` datetime DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf32 COLLATE=utf32_unicode_ci;

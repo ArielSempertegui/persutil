@@ -9,6 +9,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import net.ausiasmarch.persutil.entity.SilvestreEntity;
+import net.ausiasmarch.persutil.exception.ResourceNotFoundException;
+import net.ausiasmarch.persutil.exception.UnauthorizedException;
 import net.ausiasmarch.persutil.repository.SilvestreRepository;
 
 @Service
@@ -19,6 +21,9 @@ public class SilvestreService {
 
     @Autowired
     AleatorioService oAleatorioService;
+
+    @Autowired
+    SessionService oSessionService;
 
     ArrayList<String> alTitulos = new ArrayList<>();
     ArrayList<String> alDescripciones = new ArrayList<>();
@@ -100,23 +105,24 @@ public class SilvestreService {
     // ---------------------------------------------------------------
 
     public SilvestreEntity get(Long id) {
-        return oSilvestreRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Silvestre not found"));
+        if (oSessionService.isSessionActive()) {
+            return oSilvestreRepository.findById(id)
+                    .orElseThrow(() -> new ResourceNotFoundException("Post not found"));
+        } else {
+            SilvestreEntity oEntity = oSilvestreRepository.findByIdAndPublicadoTrue(id);
+            if (oEntity == null) {
+                throw new ResourceNotFoundException("Post not found or not published");
+            }
+            return oEntity;
+        }
     }
 
     public Long create(SilvestreEntity oEntity) {
 
-        // Validación simple
-        if (oEntity.getDescripcion() == null || oEntity.getDescripcion().isBlank()) {
-            throw new RuntimeException("La descripción es obligatoria.");
+        if (!oSessionService.isSessionActive()) {
+            throw new UnauthorizedException("No active session");
         }
 
-        // 🟢 DEFAULTS IMPORTANTES
-        if (oEntity.getPublicado() == null) {
-            oEntity.setPublicado(false);
-        }
-
-        oEntity.setId(null); // Asegura autogenerado
         oEntity.setFechaCreacion(LocalDateTime.now());
         oEntity.setFechaModificacion(null);
 
@@ -126,30 +132,59 @@ public class SilvestreService {
 
     public Long update(SilvestreEntity oEntity) {
 
-        SilvestreEntity existing = oSilvestreRepository.findById(oEntity.getId())
-                .orElseThrow(() -> new RuntimeException("Silvestre not found"));
-
-        if (oEntity.getDescripcion() == null || oEntity.getDescripcion().isBlank()) {
-            throw new RuntimeException("La descripción es obligatoria.");
+        if (!oSessionService.isSessionActive()) {
+            throw new UnauthorizedException("No active session");
         }
 
-        existing.setTitulo(oEntity.getTitulo());
-        existing.setDescripcion(oEntity.getDescripcion());
-        existing.setUrlImagen(oEntity.getUrlImagen());
-        existing.setPublicado(oEntity.getPublicado() != null ? oEntity.getPublicado() : existing.getPublicado());
-        existing.setFechaModificacion(LocalDateTime.now());
-
-        oSilvestreRepository.save(existing);
-        return existing.getId();
+    SilvestreEntity existingSilvestre = oSilvestreRepository.findById(oEntity.getId())
+        .orElseThrow(() -> new ResourceNotFoundException("Post not found"));
+    existingSilvestre.setTitulo(oEntity.getTitulo());
+    existingSilvestre.setDescripcion(oEntity.getDescripcion());
+    existingSilvestre.setUrlImagen(oEntity.getUrlImagen());
+    existingSilvestre.setPublicado(oEntity.getPublicado());
+    existingSilvestre.setFechaModificacion(LocalDateTime.now());
+    oSilvestreRepository.save(existingSilvestre);
+    return existingSilvestre.getId();
     }
 
     public Long delete(Long id) {
+        if (!oSessionService.isSessionActive()) {
+            throw new UnauthorizedException("No active session");
+        }
         oSilvestreRepository.deleteById(id);
         return id;
     }
 
     public Page<SilvestreEntity> getPage(Pageable pageable) {
-        return oSilvestreRepository.findAll(pageable);
+        // si no hay sesión activa, solo devolver los publicados
+        if (!oSessionService.isSessionActive()) {
+            return oSilvestreRepository.findByPublicadoTrue(pageable);
+        } else {
+            return oSilvestreRepository.findAll(pageable);
+        }
+    }
+
+    // getPage con filtros opcionales 
+    public Page<SilvestreEntity> getPageFiltered(Pageable pageable, String titulo, String descripcion, Boolean publicado) {
+        String sTitulo = (titulo == null) ? "" : titulo;
+        String sDescripcion = (descripcion == null) ? "" : descripcion;
+
+        if (publicado == null) {
+            // buscar por titulo+descripcion sin filtrar por publicado
+            return oSilvestreRepository.findByTituloContainingIgnoreCaseAndDescripcionContainingIgnoreCase(sTitulo, sDescripcion, pageable);
+        } else {
+            return oSilvestreRepository.findByPublicadoAndTituloContainingIgnoreCaseAndDescripcionContainingIgnoreCase(publicado, sTitulo, sDescripcion, pageable);
+        }
+    }
+
+    public Long countFiltered(String titulo, String descripcion, Boolean publicado) {
+        String sTitulo = (titulo == null) ? "" : titulo;
+        String sDescripcion = (descripcion == null) ? "" : descripcion;
+        if (publicado == null) {
+            return oSilvestreRepository.countByTituloContainingIgnoreCaseAndDescripcionContainingIgnoreCase(sTitulo, sDescripcion);
+        } else {
+            return oSilvestreRepository.countByPublicadoAndTituloContainingIgnoreCaseAndDescripcionContainingIgnoreCase(publicado, sTitulo, sDescripcion);
+        }
     }
 
     public Long count() {
@@ -161,6 +196,9 @@ public class SilvestreService {
     // ---------------------------------------------------------------
 
     public Long rellenaSilvestre(Long numItems) {
+        if (!oSessionService.isSessionActive()) {
+            throw new UnauthorizedException("No active session");
+        }
         for (long i = 0; i < numItems; i++) {
             SilvestreEntity o = new SilvestreEntity();
 
@@ -176,5 +214,30 @@ public class SilvestreService {
         }
         return oSilvestreRepository.count();
     }
+
+    public Long publicar(Long id) {
+        if (!oSessionService.isSessionActive()) {
+            throw new UnauthorizedException("No active session");
+        }
+    SilvestreEntity existingSilvestre = oSilvestreRepository.findById(id)
+        .orElseThrow(() -> new ResourceNotFoundException("Post not found"));
+    existingSilvestre.setPublicado(true);
+    existingSilvestre.setFechaModificacion(LocalDateTime.now());
+    oSilvestreRepository.save(existingSilvestre);
+    return existingSilvestre.getId();
+    }
+
+    public Long despublicar(Long id) {
+        if (!oSessionService.isSessionActive()) {
+            throw new UnauthorizedException("No active session");
+        }
+    SilvestreEntity existingSilvestre = oSilvestreRepository.findById(id)
+        .orElseThrow(() -> new ResourceNotFoundException("Post not found"));
+    existingSilvestre.setPublicado(false);
+    existingSilvestre.setFechaModificacion(LocalDateTime.now());
+    oSilvestreRepository.save(existingSilvestre);
+    return existingSilvestre.getId();
+    }
+
 }
 

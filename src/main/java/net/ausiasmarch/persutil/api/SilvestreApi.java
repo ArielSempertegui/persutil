@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import net.ausiasmarch.persutil.entity.SilvestreEntity;
@@ -23,60 +24,79 @@ import net.ausiasmarch.persutil.service.SilvestreService;
 @RequestMapping("/silvestre")
 public class SilvestreApi {
 
-
-
     @Autowired
     SilvestreService oSilvestreService;
-
-    // ------------------------ ENDPOINT TEST ------------------------
 
     @GetMapping("/saludar")
     public ResponseEntity<String> saludar() {
         return new ResponseEntity<>("\"Hola desde Silvestre\"", HttpStatus.OK);
     }
 
-    // ------------------------ FAKE FILL ----------------------------
-
     @GetMapping("/rellena/{numItems}")
     public ResponseEntity<Long> rellenaSilvestre(@PathVariable Long numItems) {
         return ResponseEntity.ok(oSilvestreService.rellenaSilvestre(numItems));
     }
 
-    // ---------------------------- CRUD -----------------------------
+    // ----------------------------CRUD---------------------------------
 
-    // Obtener imagen por id
+    // obtener publicación por id
     @GetMapping("/{id}")
     public ResponseEntity<SilvestreEntity> get(@PathVariable Long id) {
         return ResponseEntity.ok(oSilvestreService.get(id));
     }
 
-    // Crear imagen
+    // crear publicaciones
     @PostMapping("")
     public ResponseEntity<Long> create(@RequestBody SilvestreEntity oEntity) {
         return ResponseEntity.ok(oSilvestreService.create(oEntity));
     }
 
-    // Modificar imagen
+    // modificar publicaciones
     @PutMapping("")
     public ResponseEntity<Long> update(@RequestBody SilvestreEntity oEntity) {
         return ResponseEntity.ok(oSilvestreService.update(oEntity));
     }
 
-    // Eliminar imagen
+    // borrar posts
     @DeleteMapping("/{id}")
     public ResponseEntity<Long> delete(@PathVariable Long id) {
         return ResponseEntity.ok(oSilvestreService.delete(id));
     }
 
-    // Listado paginado de imágenes
+    // listado paginado de posts
     @GetMapping("")
-    public ResponseEntity<Page<SilvestreEntity>> getPage(Pageable pageable) {
-        return ResponseEntity.ok(oSilvestreService.getPage(pageable));
+    public ResponseEntity<Page<SilvestreEntity>> getPage(Pageable oPageable,
+            @RequestParam(name = "titulo", required = false) String titulo,
+            @RequestParam(name = "descripcion", required = false) String descripcion,
+            @RequestParam(name = "publicado", required = false) Boolean publicado) {
+        if ((titulo == null || titulo.isBlank()) && (descripcion == null || descripcion.isBlank()) && publicado == null) {
+            return ResponseEntity.ok(oSilvestreService.getPage(oPageable));
+        } else {
+            return ResponseEntity.ok(oSilvestreService.getPageFiltered(oPageable, titulo, descripcion, publicado));
+        }
     }
 
-    // Contador de registros
     @GetMapping("/count")
-    public ResponseEntity<Long> count() {
-        return ResponseEntity.ok(oSilvestreService.count());
+    public ResponseEntity<Long> count(@RequestParam(name = "titulo", required = false) String titulo,
+            @RequestParam(name = "descripcion", required = false) String descripcion,
+            @RequestParam(name = "publicado", required = false) Boolean publicado) {
+        if ((titulo == null || titulo.isBlank()) && (descripcion == null || descripcion.isBlank()) && publicado == null) {
+            return ResponseEntity.ok(oSilvestreService.count());
+        } else {
+            return ResponseEntity.ok(oSilvestreService.countFiltered(titulo, descripcion, publicado));
+        }
+    }
+
+    // publicar post
+    @PutMapping("/publicar/{id}")
+    public ResponseEntity<Long> publicar(@PathVariable Long id) {
+        return ResponseEntity.ok(oSilvestreService.publicar(id));
+    }
+
+    // despublicar post
+    @PutMapping("/despublicar/{id}")
+    public ResponseEntity<Long> despublicar(@PathVariable Long id) {
+        return ResponseEntity.ok(oSilvestreService.despublicar(id));
     }
 }
+

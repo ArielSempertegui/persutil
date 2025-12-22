@@ -9,12 +9,17 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import net.ausiasmarch.persutil.entity.ReynaEntity;
+import net.ausiasmarch.persutil.exception.ResourceNotFoundException;
+import net.ausiasmarch.persutil.exception.UnauthorizedException;
 import net.ausiasmarch.persutil.repository.ReynaRepository;
 
 @Service
 public class ReynaService {
     @Autowired
     ReynaRepository oReynaRepository;
+
+    @Autowired
+    SessionService oSessionService;
 
     private static final String[] FRASES = {
             "La vida es aquello que te va sucediendo mientras te empeñas en hacer otros planes",
@@ -45,10 +50,22 @@ public class ReynaService {
     private final Random random = new Random();
 
     public ReynaEntity get(Long id) {
-        return oReynaRepository.findById(id).orElse(null);
+        if (oSessionService.isSessionActive()) {
+            return oReynaRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Post not found"));
+        } else {
+            ReynaEntity oReynaEntity = oReynaRepository.findByIdAndEsPublicaTrue(id);
+            if (oReynaEntity == null) {
+                throw new ResourceNotFoundException("Post not found or not published");
+            }
+            return oReynaEntity;
+        }
+
     }
 
     public Long create(ReynaEntity oReynaEntity) {
+        if (!oSessionService.isSessionActive()) {
+            throw new UnauthorizedException("No active session");
+        }
         oReynaEntity.setFechaCreacion(LocalDateTime.now());
         oReynaEntity.setFechaModificacion(null);
         oReynaRepository.save(oReynaEntity);
@@ -56,8 +73,11 @@ public class ReynaService {
     }
 
     public Long update(ReynaEntity oReynaEntity) {
+        if (!oSessionService.isSessionActive()) {
+            throw new UnauthorizedException("No active session");
+        }
         ReynaEntity existingReyna = oReynaRepository.findById(oReynaEntity.getId())
-                .orElseThrow(() -> new RuntimeException("Reyna not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Post not found"));
         existingReyna.setFrase(oReynaEntity.getFrase());
         existingReyna.setAutor(oReynaEntity.getAutor());
         existingReyna.setEsPublica(oReynaEntity.isEsPublica());
@@ -67,12 +87,19 @@ public class ReynaService {
     }
 
     public Long delete(Long id) {
+        if (!oSessionService.isSessionActive()) {
+            throw new UnauthorizedException("No active session");
+        }
         oReynaRepository.deleteById(id);
         return id;
     }
 
     public Page<ReynaEntity> getPage(Pageable oPageable) {
-        return oReynaRepository.findAll(oPageable);
+        if (!oSessionService.isSessionActive()) {
+            return oReynaRepository.findByEsPublicaTrue(oPageable);
+        } else {
+            return oReynaRepository.findAll(oPageable);
+        }
     }
 
     public Long count() {
@@ -80,6 +107,11 @@ public class ReynaService {
     }
 
     public Long createRandom(Long cantidad) {
+        // Solo se permite si hay sesión activa
+        if (!oSessionService.isSessionActive()) {
+            throw new UnauthorizedException("No active session");
+        }
+
         for (int i = 0; i < cantidad; i++) {
             int indiceAleatorio = random.nextInt(FRASES.length);
 
@@ -94,4 +126,40 @@ public class ReynaService {
         }
         return cantidad;
     }
+
+    // publicar
+    public Long publicar(Long id) {
+        if (!oSessionService.isSessionActive()) {
+            throw new UnauthorizedException("No active session");
+        }
+        ReynaEntity existingReyna = oReynaRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Post not found"));
+        existingReyna.setEsPublica(true);
+        existingReyna.setFechaModificacion(LocalDateTime.now());
+        oReynaRepository.save(existingReyna);
+        return existingReyna.getId();
+    }
+
+     public Long despublicar(Long id) {
+        if (!oSessionService.isSessionActive()) {
+            throw new UnauthorizedException("No active session");
+        }
+        ReynaEntity existingReyna = oReynaRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Post not found"));
+        existingReyna.setEsPublica(false);
+        existingReyna.setFechaModificacion(LocalDateTime.now());
+        oReynaRepository.save(existingReyna);
+        return existingReyna.getId();
+    }
+
+    // vaciar tabla blog (solo administrador)
+    public Long empty() {
+        if (!oSessionService.isSessionActive()) {
+            throw new UnauthorizedException("No active session");
+        }
+        Long total = oReynaRepository.count();
+        oReynaRepository.deleteAll();
+        return total;
+    }
 }
+    
