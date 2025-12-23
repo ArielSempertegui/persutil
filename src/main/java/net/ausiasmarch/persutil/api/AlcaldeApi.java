@@ -34,6 +34,13 @@ public class AlcaldeApi {
         return ResponseEntity.ok(oAlcaldeService.getPage(pageable, soloPublicados));
     }
 
+    @GetMapping("/filtered")
+    public ResponseEntity<Page<AlcaldeEntity>> getPageFiltered(Pageable pageable,
+            @RequestParam(name = "genero", required = false) String genero,
+            @RequestParam(name = "minValoracion", defaultValue = "0") int minValoracion) {
+        return ResponseEntity.ok(oAlcaldeService.getPageFiltered(pageable, genero, minValoracion));
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<AlcaldeEntity> get(@PathVariable Long id) {
         return ResponseEntity.ok(oAlcaldeService.get(id));
@@ -59,13 +66,34 @@ public class AlcaldeApi {
         return ResponseEntity.ok(oAlcaldeService.count());
     }
 
+    @GetMapping("/generos")
+    public ResponseEntity<List<String>> generos() {
+        return ResponseEntity.ok(oAlcaldeService.getGeneros());
+    }
+
     @GetMapping("/selection")
-    public ResponseEntity<List<AlcaldeEntity>> selection() {
-        return ResponseEntity.ok(oAlcaldeService.getSeleccion());
+    public ResponseEntity<List<AlcaldeEntity>> selection(
+            @RequestParam(defaultValue = "6") int limit) {
+        return ResponseEntity.ok(oAlcaldeService.getSeleccion(limit));
     }
 
     @GetMapping("/rellena/{cantidad}")
     public ResponseEntity<Long> rellena(@PathVariable Long cantidad) {
         return ResponseEntity.ok(oAlcaldeService.rellena(cantidad));
+    }
+
+    @DeleteMapping("/empty")
+    public ResponseEntity<Long> empty() {
+        return ResponseEntity.ok(oAlcaldeService.empty());
+    }
+
+    @PutMapping("/publicar/{id}")
+    public ResponseEntity<Long> publicar(@PathVariable Long id) {
+        return ResponseEntity.ok(oAlcaldeService.publicar(id));
+    }
+
+    @PutMapping("/despublicar/{id}")
+    public ResponseEntity<Long> despublicar(@PathVariable Long id) {
+        return ResponseEntity.ok(oAlcaldeService.despublicar(id));
     }
 }
