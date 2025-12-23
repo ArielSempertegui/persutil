@@ -308,7 +308,7 @@ CREATE TABLE `uski_libro_visita` (
 -- --------------------------------------------------------
 
 --
--- Table structure for table `zanon`
+-- Estructura de tabla para la tabla `zanon`
 --
 
 CREATE TABLE `zanon` (
@@ -320,7 +320,8 @@ CREATE TABLE `zanon` (
   `fecha_modificacion` datetime DEFAULT NULL,
   `duracion` int NOT NULL,
   `dificultad` enum('baja','media','alta') CHARACTER SET utf32 COLLATE utf32_unicode_ci NOT NULL,
-  `publico` tinyint(1) NOT NULL
+  `publico` tinyint(1) NOT NULL,
+  `imagen` varchar(255) CHARACTER SET utf32 COLLATE utf32_unicode_ci NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf32 COLLATE=utf32_unicode_ci;
 
 --
@@ -437,7 +438,7 @@ ALTER TABLE `uski_libro_visita`
   ADD PRIMARY KEY (`id`);
 
 --
--- Indexes for table `zanon`
+-- Indices de la tabla `zanon`
 --
 ALTER TABLE `zanon`
   ADD PRIMARY KEY (`id`);
@@ -555,7 +556,7 @@ ALTER TABLE `uski_libro_visita`
   MODIFY `id` bigint NOT NULL AUTO_INCREMENT;
 
 --
--- AUTO_INCREMENT for table `zanon`
+-- AUTO_INCREMENT de la tabla `zanon`
 --
 ALTER TABLE `zanon`
   MODIFY `id` bigint NOT NULL AUTO_INCREMENT;
