@@ -1,6 +1,5 @@
 package net.ausiasmarch.persutil.service;
 
-import java.time.LocalDate;
 import java.util.List;
 import java.util.Random;
 
@@ -73,6 +72,10 @@ public class AlcaldeService {
         return oAlcaldeRepository.findAll(pageable);
     }
 
+    public Page<AlcaldeEntity> getPageFiltered(Pageable pageable, String genero, int minValoracion) {
+        return oAlcaldeRepository.findByPublicadoTrueFiltered(genero, minValoracion, pageable);
+    }
+
     public AlcaldeEntity get(Long id) {
         return oAlcaldeRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Libro no encontrado"));
@@ -93,7 +96,6 @@ public class AlcaldeService {
         existente.setValoracion(oEntidad.getValoracion());
         existente.setPublicado(oEntidad.getPublicado());
         existente.setDestacado(oEntidad.getDestacado());
-        existente.setFechaLectura(oEntidad.getFechaLectura());
         oAlcaldeRepository.save(existente);
         return existente.getId();
     }
@@ -107,14 +109,19 @@ public class AlcaldeService {
         return oAlcaldeRepository.count();
     }
 
-    public List<AlcaldeEntity> getSeleccion() {
-        List<AlcaldeEntity> destacados = oAlcaldeRepository
-                .findTop6ByPublicadoTrueAndDestacadoTrueOrderByValoracionDesc();
+    public List<String> getGeneros() {
+        return oAlcaldeRepository.findDistinctGeneros();
+    }
+
+    public List<AlcaldeEntity> getSeleccion(int limit) {
+        Page<AlcaldeEntity> destacados = oAlcaldeRepository
+                .findByPublicadoTrueAndDestacadoTrue(
+                    PageRequest.of(0, limit, Sort.by(Sort.Direction.DESC, "valoracion")));
         if (!destacados.isEmpty()) {
-            return destacados;
+            return destacados.getContent();
         }
         return oAlcaldeRepository.findByPublicadoTrue(
-                PageRequest.of(0, 6, Sort.by(Sort.Direction.DESC, "valoracion"))).getContent();
+                PageRequest.of(0, limit, Sort.by(Sort.Direction.DESC, "valoracion"))).getContent();
     }
 
     public Long rellena(Long cantidad) {
@@ -127,18 +134,36 @@ public class AlcaldeService {
             libro.setValoracion(random.nextInt(5) + 1);
             libro.setPublicado(random.nextBoolean());
             libro.setDestacado(random.nextInt(100) < 35);
-            libro.setFechaLectura(LocalDate.now().minusDays(random.nextInt(365 * 3)));
             prepararParaCrear(libro);
             oAlcaldeRepository.save(libro);
         }
         return oAlcaldeRepository.count();
     }
 
+    public Long empty() {
+        Long count = oAlcaldeRepository.count();
+        oAlcaldeRepository.deleteAll();
+        return count;
+    }
+
+    public Long publicar(Long id) {
+        AlcaldeEntity entidad = get(id);
+        entidad.setPublicado(true);
+        oAlcaldeRepository.save(entidad);
+        return id;
+    }
+
+    public Long despublicar(Long id) {
+        AlcaldeEntity entidad = get(id);
+        entidad.setPublicado(false);
+        oAlcaldeRepository.save(entidad);
+        return id;
+    }
+
     private void prepararParaCrear(AlcaldeEntity entidad) {
         entidad.setPublicado(entidad.getPublicado() != null ? entidad.getPublicado() : Boolean.TRUE);
         entidad.setDestacado(entidad.getDestacado() != null ? entidad.getDestacado() : Boolean.FALSE);
         entidad.setValoracion(entidad.getValoracion() != null ? entidad.getValoracion() : 3);
-        entidad.setFechaLectura(entidad.getFechaLectura() != null ? entidad.getFechaLectura() : LocalDate.now());
     }
 
     private String generarResena() {

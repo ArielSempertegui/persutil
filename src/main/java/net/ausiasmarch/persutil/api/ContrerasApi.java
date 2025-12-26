@@ -1,3 +1,4 @@
+
 package net.ausiasmarch.persutil.api;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,15 +52,46 @@ public class ContrerasApi {
         return ResponseEntity.ok(oContrerasService.delete(id));
     }
 
-    // listado paginado de posts
+
+    // listar posts publicos (no login)
     @GetMapping("")
-    public ResponseEntity<Page<ContrerasEntity>> getPage(Pageable oPageable) {
+    public ResponseEntity<Page<ContrerasEntity>> getPagePublicos(Pageable oPageable) {
+        return ResponseEntity.ok(oContrerasService.getPageByPublico(true, oPageable));
+    }
+
+    // listar todos los posts
+    @GetMapping("/admin")
+    public ResponseEntity<Page<ContrerasEntity>> getPageAdmin(Pageable oPageable) {
         return ResponseEntity.ok(oContrerasService.getPage(oPageable));
-        
     }
 
     @GetMapping("/count")
     public ResponseEntity<Long> count() {
         return ResponseEntity.ok(oContrerasService.count()); 
+    }
+    
+    // publicar post
+    @PutMapping("/publicar/{id}")
+    public ResponseEntity<Long> publicar(@PathVariable Long id) {
+        return ResponseEntity.ok(oContrerasService.publicar(id));
+    }
+
+    // despublicar post
+    @PutMapping("/despublicar/{id}")
+    public ResponseEntity<Long> despublicar(@PathVariable Long id) {
+        return ResponseEntity.ok(oContrerasService.despublicar(id));
+    }
+
+    // Rellenar posts
+    @GetMapping("/rellena/{numPosts}")
+    public ResponseEntity<Long> rellenaContreras(@PathVariable Long numPosts) {
+        return ResponseEntity.ok(oContrerasService.rellenaContreras(numPosts));
+    }
+
+    // Borrar todos los posts
+    @DeleteMapping("/all")
+    public ResponseEntity<Void> deleteAll() {
+        oContrerasService.deleteAll();
+        return ResponseEntity.noContent().build();
     }
 }

@@ -4,11 +4,15 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.stream.Collectors;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+
 import net.ausiasmarch.persutil.entity.ZanonEntity;
+import net.ausiasmarch.persutil.exception.ResourceNotFoundException;
+import net.ausiasmarch.persutil.exception.UnauthorizedException;
 import net.ausiasmarch.persutil.repository.ZanonRepository;
 
 @Service
@@ -19,6 +23,9 @@ public class ZanonService {
 
     @Autowired
     ZanonRepository oZanonRepository;
+
+    @Autowired
+    SessionService oSessionService;
 
     ArrayList<String> rutinas = new ArrayList<>();
 
@@ -95,7 +102,7 @@ public class ZanonService {
 
             // Establecemos si la rutina es pública o no
             oZanonEntity.setPublico(esPublico(oAleatorioService.GenerarNumeroAleatorioEnteroEnRango(0, 1)));
-
+            
             // Lo guardamos todo en la base de datos
             oZanonRepository.save(oZanonEntity);
         }
@@ -107,17 +114,41 @@ public class ZanonService {
     // ------------------------------ CRUD ------------------------------
 
     public ZanonEntity get(Long id) {
-        return oZanonRepository.findById(id).orElseThrow(() -> new RuntimeException("Blog not found"));
+        if (oSessionService.isSessionActive()) {
+            return oZanonRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Post not found"));
+        } else{
+            ZanonEntity oZanonEntity = oZanonRepository.findByIdAndPublicoTrue(id);
+
+            if (oZanonEntity == null) {
+                throw new ResourceNotFoundException("Post not found or not published");
+            }
+
+            return oZanonEntity;
+        }
     }
 
     public Long create(ZanonEntity zanonEntity) {
+        if (!oSessionService.isSessionActive()) {
+            throw new UnauthorizedException("No active session");
+        }
+        
         zanonEntity.setFechaCreacion(LocalDateTime.now());
         zanonEntity.setFechaModificacion(null);
+
+        // Si la imagen viene vacía o nula, establecemos una por defecto
+        if (zanonEntity.getImagen() == null || zanonEntity.getImagen().isEmpty()) {
+            zanonEntity.setImagen("https://avena.io/blog/wp-content/uploads/2023/09/Guia-completa-y-efectiva-para-tu-rutina-de-ejercicios-todo-lo-que-necesitas-saber-1.jpg");
+        }
+
         oZanonRepository.save(zanonEntity);
         return zanonEntity.getId();
     }
 
     public Long update(ZanonEntity zanonEntity) {
+        if (!oSessionService.isSessionActive()) {
+            throw new UnauthorizedException("No active session");
+        }
+
         ZanonEntity existingBlog = oZanonRepository.findById(zanonEntity.getId())
                 .orElseThrow(() -> new RuntimeException("Blog not found"));
         existingBlog.setTitulo(zanonEntity.getTitulo());
@@ -127,17 +158,31 @@ public class ZanonService {
         existingBlog.setDuracion(zanonEntity.getDuracion());
         existingBlog.setDificultad(zanonEntity.getDificultad());
         existingBlog.setPublico(zanonEntity.getPublico());
+        existingBlog.setImagen(zanonEntity.getImagen());
         oZanonRepository.save(existingBlog);
         return existingBlog.getId();
     }
 
     public Long delete(Long id) {
+        if (!oSessionService.isSessionActive()) {
+            throw new UnauthorizedException("No active session");
+        }
+
         oZanonRepository.deleteById(id);
         return id;
     }
 
-    public Page<ZanonEntity> getPage(Pageable oPageable) {
-        return oZanonRepository.findAll(oPageable);
+    public Page<ZanonEntity> getPage(Pageable oPageable, Boolean publico) {
+        if (Boolean.TRUE.equals(publico)) {
+            return oZanonRepository.findByPublicoTrue(oPageable);
+        }
+        
+        // Si no hay session activa, solo devuelve los publicados
+        if (!oSessionService.isSessionActive()) {
+            return oZanonRepository.findByPublicoTrue(oPageable);
+        } else {
+            return oZanonRepository.findAll(oPageable);
+        }
     }
 
     public Long count() {
@@ -165,5 +210,39 @@ public class ZanonService {
         }
 
         return numPosts;
+    }
+
+    public Long publicar(Long id) {
+        if (!oSessionService.isSessionActive()) {
+            throw new UnauthorizedException("No active session");
+        }
+        ZanonEntity oExistingBlog = oZanonRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Post not found"));
+        oExistingBlog.setPublico(true);
+        oExistingBlog.setFechaModificacion(LocalDateTime.now());
+        oZanonRepository.save(oExistingBlog);
+        return oExistingBlog.getId();
+    }
+
+    public Long despublicar(Long id) {
+        if (!oSessionService.isSessionActive()) {
+            throw new UnauthorizedException("No active session");
+        }
+        ZanonEntity oExistingBlog = oZanonRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Post not found"));
+        oExistingBlog.setPublico(false);
+        oExistingBlog.setFechaModificacion(LocalDateTime.now());
+        oZanonRepository.save(oExistingBlog);
+        return oExistingBlog.getId();
+    }
+
+    public Long empty() {
+        if (!oSessionService.isSessionActive()) {
+            throw new UnauthorizedException("No active session");
+        }
+
+        Long total = oZanonRepository.count();
+        oZanonRepository.deleteAll();
+        return total;
     }
 }

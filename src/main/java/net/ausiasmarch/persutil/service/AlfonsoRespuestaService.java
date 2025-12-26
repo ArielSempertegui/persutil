@@ -9,6 +9,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import net.ausiasmarch.persutil.entity.AlfonsoRespuestaEntity;
+import net.ausiasmarch.persutil.exception.ResourceNotFoundException;
+import net.ausiasmarch.persutil.exception.UnauthorizedException;
 import net.ausiasmarch.persutil.repository.AlfonsoRespuestaRepository;
 
 @Service
@@ -46,7 +48,13 @@ public class AlfonsoRespuestaService {
     @Autowired
     private AleatorioService oAleatorioService;
 
+    @Autowired
+    private SessionService oSessionService;
+
     public Long rellenaRespuestas(Long cantidad) {
+        if (!oSessionService.isSessionActive()) {
+            throw new UnauthorizedException("No active session");
+        }
         for (long i = 0; i < cantidad; i++) {
             AlfonsoRespuestaEntity entity = new AlfonsoRespuestaEntity();
             entity.setAutor(AUTOR_FAKE.get(oAleatorioService.GenerarNumeroAleatorioEnteroEnRango(0, AUTOR_FAKE.size() - 1)));
@@ -73,11 +81,22 @@ public class AlfonsoRespuestaService {
     }
 
     public AlfonsoRespuestaEntity get(Long id) {
-        return oAlfonsoRespuestaRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Respuesta no encontrada"));
+        if (oSessionService.isSessionActive()) {
+            return oAlfonsoRespuestaRepository.findById(id)
+                    .orElseThrow(() -> new ResourceNotFoundException("Respuesta no encontrada"));
+        } else {
+            AlfonsoRespuestaEntity entity = oAlfonsoRespuestaRepository.findByIdAndPublicadoTrue(id);
+            if (entity == null) {
+                throw new ResourceNotFoundException("Respuesta no encontrada o no publicada");
+            }
+            return entity;
+        }
     }
 
     public Long create(AlfonsoRespuestaEntity entity) {
+        if (!oSessionService.isSessionActive()) {
+            throw new UnauthorizedException("No active session");
+        }
         if (entity.getPublicado() == null) {
             entity.setPublicado(Boolean.TRUE);
         }
@@ -88,8 +107,11 @@ public class AlfonsoRespuestaService {
     }
 
     public Long update(AlfonsoRespuestaEntity entity) {
+        if (!oSessionService.isSessionActive()) {
+            throw new UnauthorizedException("No active session");
+        }
         AlfonsoRespuestaEntity existing = oAlfonsoRespuestaRepository.findById(entity.getId())
-                .orElseThrow(() -> new RuntimeException("Respuesta no encontrada"));
+                .orElseThrow(() -> new ResourceNotFoundException("Respuesta no encontrada"));
         existing.setAutor(entity.getAutor());
         existing.setContenido(entity.getContenido());
         existing.setPublicado(entity.getPublicado());
@@ -99,15 +121,60 @@ public class AlfonsoRespuestaService {
     }
 
     public Long delete(Long id) {
+        if (!oSessionService.isSessionActive()) {
+            throw new UnauthorizedException("No active session");
+        }
         oAlfonsoRespuestaRepository.deleteById(id);
         return id;
     }
 
-    public Page<AlfonsoRespuestaEntity> getPage(Pageable pageable) {
-        return oAlfonsoRespuestaRepository.findAll(pageable);
+    public Page<AlfonsoRespuestaEntity> getPage(String filter, Pageable pageable) {
+        boolean publishedOnly = !oSessionService.isSessionActive();
+        return oAlfonsoRespuestaRepository.search(filter, publishedOnly, pageable);
     }
 
     public Long count() {
         return oAlfonsoRespuestaRepository.count();
+    }
+
+    public Long countVisible() {
+        if (oSessionService.isSessionActive()) {
+            return oAlfonsoRespuestaRepository.count();
+        } else {
+            return oAlfonsoRespuestaRepository.countByPublicadoTrue();
+        }
+    }
+
+    public Long publicar(Long id) {
+        if (!oSessionService.isSessionActive()) {
+            throw new UnauthorizedException("No active session");
+        }
+        AlfonsoRespuestaEntity existing = oAlfonsoRespuestaRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Respuesta no encontrada"));
+        existing.setPublicado(true);
+        existing.setFechaModificacion(LocalDateTime.now());
+        oAlfonsoRespuestaRepository.save(existing);
+        return existing.getId();
+    }
+
+    public Long despublicar(Long id) {
+        if (!oSessionService.isSessionActive()) {
+            throw new UnauthorizedException("No active session");
+        }
+        AlfonsoRespuestaEntity existing = oAlfonsoRespuestaRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Respuesta no encontrada"));
+        existing.setPublicado(false);
+        existing.setFechaModificacion(LocalDateTime.now());
+        oAlfonsoRespuestaRepository.save(existing);
+        return existing.getId();
+    }
+
+    public Long empty() {
+        if (!oSessionService.isSessionActive()) {
+            throw new UnauthorizedException("No active session");
+        }
+        Long total = oAlfonsoRespuestaRepository.count();
+        oAlfonsoRespuestaRepository.deleteAll();
+        return total;
     }
 }
